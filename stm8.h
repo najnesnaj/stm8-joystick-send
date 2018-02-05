@@ -478,13 +478,13 @@
 #define W_REGISTER		0x20 // 001AAAAA
 #define R_RX_PAYLOAD		0x61 // 01100001
 #define W_TX_PAYLOAD		0xa0 // 10100000
-#define FLUSH_TX		0xe1 // 11100001
-#define FLUSH_RX		0xe2 // 11100010
-#define REUSE_TX_PL		0xe3 // 11100011
+//#define FLUSH_TX		0xe1 // 11100001
+//#define FLUSH_RX		0xe2 // 11100010
+//#define REUSE_TX_PL		0xe3 // 11100011
 #define R_RX_PL_WID		0x60 // 01100000
 #define W_ACK_PAYLOAD		0xa8 // 10101PPP
 #define W_TX_PAYLOAD_NO_ACK	0xb0 // 10110000
-#define NOP			0xff // 11111111
+//#define NOP			0xff // 11111111
 #define CONFIG			0x00
 #define    MASK_RX_DR		(1 << 6)
 #define    MASK_TX_DS		(1 << 5)
@@ -513,7 +513,7 @@
 #define    AW3			1
 #define    AW4			2
 #define    AW5			3
-#define SETUP_RETR		0x4
+//#define SETUP_RETR		0x4
 #define    ARD0250		0x00
 #define    ARD0500		0x01
 #define    ARD0750		0x02
@@ -556,7 +556,7 @@
 #define    RF_PWR_HIGH		(2 << 1)
 #define    RF_PWR_MED		(1 << 1)
 #define    RF_PWR_LOW		(0 << 1)
-#define STATUS			0x07
+//#define STATUS			0x07
 #define    RX_DR		(1 << 6)
 #define    TX_DS		(1 << 5)
 #define    MAX_RT		(1 << 4)
@@ -568,12 +568,12 @@
 #define    RX_P_5		(5 << 1)
 #define    RX_EMPTY		(7 << 1)
 
-#define RX_ADDR_P0		0x0a
-#define RX_ADDR_P1		0x0b
-#define RX_ADDR_P2		0x0c
-#define RX_ADDR_P3		0x0d
-#define RX_ADDR_P4		0x0e
-#define RX_ADDR_P5		0x0f
+//#define RX_ADDR_P0		0x0a
+//#define RX_ADDR_P1		0x0b
+//#define RX_ADDR_P2		0x0c
+//#define RX_ADDR_P3		0x0d
+//#define RX_ADDR_P4		0x0e
+//#define RX_ADDR_P5		0x0f
 #define TX_ADDR			0x10
 #define RX_PW_P0		0x11
 #define RX_PW_P1		0x12

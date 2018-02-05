@@ -1,7 +1,7 @@
 ;--------------------------------------------------------
 ; File Created by SDCC : free open source ANSI-C Compiler
 ; Version 3.4.0 #8981 (Jul 11 2014) (Linux)
-; This file was generated Mon Feb  5 12:41:49 2018
+; This file was generated Mon Feb  5 13:04:22 2018
 ;--------------------------------------------------------
 	.module joysticksend
 	.optsdcc -mstm8
@@ -9,53 +9,90 @@
 ;--------------------------------------------------------
 ; Public variables in this module
 ;--------------------------------------------------------
-	.globl _segmentMap
 	.globl _main
-	.globl _timer_isr
-	.globl _clock
-	.globl _tm1637DisplayDecimal
-	.globl _tm1637Init
-	.globl _InitializeUART
-	.globl _InitializeI2C
-	.globl _i2c_read_register
-	.globl _print_byte_hex
-	.globl _i2c_set_start_ack
-	.globl _i2c_send_address
-	.globl _print_UCHAR_hex
-	.globl _UARTPrintF
-	.globl _i2c_send_reg
-	.globl _i2c_set_stop
-	.globl _i2c_set_nak
-	.globl _i2c_read
+	.globl _SE8R01_Init
+	.globl _SE8R01_Analog_Init
+	.globl _SE8R01_Calibration
+	.globl _rf_switch_bank
+	.globl _init_io
 	.globl _delay
 	.globl _InitializeSystemClock
+	.globl _InitializeSPI
+	.globl _read_spi_buf
+	.globl _write_spi_buf
+	.globl _read_spi_reg
+	.globl _write_spi_reg
+	.globl _write_spi
 	.globl _delayTenMicro
-	.globl _minuten
-	.globl _seconden
-	.globl _internteller
-	.globl _tm1637SetBrightness
-	.globl __tm1637Start
-	.globl __tm1637Stop
-	.globl __tm1637ReadResult
-	.globl __tm1637WriteByte
-	.globl __tm1637ClkHigh
-	.globl __tm1637ClkLow
-	.globl __tm1637DioHigh
-	.globl __tm1637DioLow
+	.globl _memset
+	.globl _tx_buf
+	.globl _rx_buf
+	.globl _ADDRESS0
+	.globl _ADDRESS1
+	.globl _ADDRESS5
+	.globl _ADDRESS4
+	.globl _ADDRESS3
+	.globl _ADDRESS2
+	.globl _TX_ADDRESS
+	.globl _status
+	.globl _pip
+	.globl _signal_lv
+	.globl _newdata
+	.globl _pload_width_now
+	.globl _SE8R01_DR_500K
+	.globl _SE8R01_DR_1M
+	.globl _SE8R01_DR_2M
+	.globl _myData_pip4
+	.globl _myData_pip5
+	.globl _gtemp
 ;--------------------------------------------------------
 ; ram data
 ;--------------------------------------------------------
 	.area DATA
-_internteller::
-	.ds 2
-_seconden::
-	.ds 2
-_minuten::
-	.ds 2
+_gtemp::
+	.ds 5
+_myData_pip5::
+	.ds 5
+_myData_pip4::
+	.ds 5
 ;--------------------------------------------------------
 ; ram data
 ;--------------------------------------------------------
 	.area INITIALIZED
+_SE8R01_DR_2M::
+	.ds 2
+_SE8R01_DR_1M::
+	.ds 2
+_SE8R01_DR_500K::
+	.ds 2
+_pload_width_now::
+	.ds 2
+_newdata::
+	.ds 2
+_signal_lv::
+	.ds 1
+_pip::
+	.ds 2
+_status::
+	.ds 1
+_TX_ADDRESS::
+	.ds 4
+_ADDRESS2::
+	.ds 1
+_ADDRESS3::
+	.ds 1
+_ADDRESS4::
+	.ds 1
+_ADDRESS5::
+	.ds 1
+_ADDRESS1::
+	.ds 4
+_ADDRESS0::
+	.ds 4
+_rx_buf::
+	.ds 32
+_tx_buf::
+	.ds 32
 ;--------------------------------------------------------
 ; Stack segment in internal ram 
 ;--------------------------------------------------------
@@ -97,7 +134,7 @@ __interrupt_vect:
 	int 0x0000 ;int20
 	int 0x0000 ;int21
 	int 0x0000 ;int22
-	int _timer_isr ;int23
+	int 0x0000 ;int23
 	int 0x0000 ;int24
 	int 0x0000 ;int25
 	int 0x0000 ;int26
@@ -144,87 +181,338 @@ __sdcc_program_startup:
 ; code
 ;--------------------------------------------------------
 	.area CODE
-;	joysticksend.c: 15: void delayTenMicro (void) {
+;	joysticksend.c: 37: void delayTenMicro (void) {
 ;	-----------------------------------------
 ;	 function delayTenMicro
 ;	-----------------------------------------
 _delayTenMicro:
-;	joysticksend.c: 17: for (a = 0; a < 50; ++a)
+;	joysticksend.c: 39: for (a = 0; a < 50; ++a)
 	ld	a, #0x32
 00104$:
-;	joysticksend.c: 18: __asm__("nop");
+;	joysticksend.c: 40: __asm__("nop");
 	nop
 	dec	a
-;	joysticksend.c: 17: for (a = 0; a < 50; ++a)
+;	joysticksend.c: 39: for (a = 0; a < 50; ++a)
 	tnz	a
 	jrne	00104$
 	ret
-;	joysticksend.c: 21: void InitializeSystemClock() {
+;	joysticksend.c: 42: UCHAR write_spi (UCHAR value) {
+;	-----------------------------------------
+;	 function write_spi
+;	-----------------------------------------
+_write_spi:
+;	joysticksend.c: 44: delayTenMicro ();
+	call	_delayTenMicro
+;	joysticksend.c: 45: SPI_DR = value;
+	ldw	x, #0x5204
+	ld	a, (0x03, sp)
+	ld	(x), a
+;	joysticksend.c: 46: delayTenMicro ();
+	call	_delayTenMicro
+;	joysticksend.c: 47: while ((SPI_SR & TXE) == 0);
+00101$:
+	ldw	x, #0x5203
+	ld	a, (x)
+	bcp	a, #0x02
+	jreq	00101$
+;	joysticksend.c: 48: delayTenMicro ();
+	call	_delayTenMicro
+;	joysticksend.c: 49: while ((SPI_SR & RXNE) == 0);
+00104$:
+	ldw	x, #0x5203
+	ld	a, (x)
+	srl	a
+	jrnc	00104$
+;	joysticksend.c: 50: delayTenMicro ();
+	call	_delayTenMicro
+;	joysticksend.c: 51: ret = SPI_DR;
+	ldw	x, #0x5204
+	ld	a, (x)
+;	joysticksend.c: 52: return (ret);
+	ret
+;	joysticksend.c: 54: UCHAR write_spi_reg (UCHAR reg, UCHAR value) {
+;	-----------------------------------------
+;	 function write_spi_reg
+;	-----------------------------------------
+_write_spi_reg:
+	push	a
+;	joysticksend.c: 56: PC_ODR &= ~(1 << CSN);
+	ldw	x, #0x500a
+	ld	a, (x)
+	and	a, #0xf7
+	ld	(x), a
+;	joysticksend.c: 57: ret = write_spi (reg);
+	ld	a, (0x04, sp)
+	push	a
+	call	_write_spi
+	addw	sp, #1
+	ld	(0x01, sp), a
+;	joysticksend.c: 58: if (reg != NOP && reg != FLUSH_RX && reg != FLUSH_TX)
+	ld	a, (0x04, sp)
+	cp	a, #0xff
+	jreq	00102$
+	ld	a, (0x04, sp)
+	cp	a, #0xe2
+	jreq	00102$
+	ld	a, (0x04, sp)
+	cp	a, #0xe1
+	jreq	00102$
+;	joysticksend.c: 59: write_spi (value);
+	ld	a, (0x05, sp)
+	push	a
+	call	_write_spi
+	pop	a
+	jra	00103$
+00102$:
+;	joysticksend.c: 61: delayTenMicro ();
+	call	_delayTenMicro
+00103$:
+;	joysticksend.c: 62: PC_ODR |= (1 << CSN);
+	ldw	x, #0x500a
+	ld	a, (x)
+	or	a, #0x08
+	ld	(x), a
+;	joysticksend.c: 63: return (ret);
+	ld	a, (0x01, sp)
+	addw	sp, #1
+	ret
+;	joysticksend.c: 65: UCHAR read_spi_reg (UCHAR reg) {
+;	-----------------------------------------
+;	 function read_spi_reg
+;	-----------------------------------------
+_read_spi_reg:
+	push	a
+;	joysticksend.c: 67: PC_ODR &= ~(1 << CSN);
+	ldw	x, #0x500a
+	ld	a, (x)
+	and	a, #0xf7
+	ld	(x), a
+;	joysticksend.c: 68: ret = write_spi (reg);
+	ld	a, (0x04, sp)
+	push	a
+	call	_write_spi
+	addw	sp, #1
+	ld	(0x01, sp), a
+;	joysticksend.c: 69: if (reg != NOP && reg != FLUSH_RX && reg != FLUSH_TX)
+	ld	a, (0x04, sp)
+	cp	a, #0xff
+	jreq	00102$
+	ld	a, (0x04, sp)
+	cp	a, #0xe2
+	jreq	00102$
+	ld	a, (0x04, sp)
+	cp	a, #0xe1
+	jreq	00102$
+;	joysticksend.c: 70: ret = write_spi (NOP);
+	push	#0xff
+	call	_write_spi
+	addw	sp, #1
+	ld	(0x01, sp), a
+	jra	00103$
+00102$:
+;	joysticksend.c: 72: delayTenMicro ();
+	call	_delayTenMicro
+00103$:
+;	joysticksend.c: 73: PC_ODR |= (1 << CSN);
+	ldw	x, #0x500a
+	ld	a, (x)
+	or	a, #0x08
+	ld	(x), a
+;	joysticksend.c: 74: return (ret);
+	ld	a, (0x01, sp)
+	addw	sp, #1
+	ret
+;	joysticksend.c: 76: UCHAR write_spi_buf (UCHAR reg, UCHAR *array, UCHAR len) {
+;	-----------------------------------------
+;	 function write_spi_buf
+;	-----------------------------------------
+_write_spi_buf:
+	sub	sp, #2
+;	joysticksend.c: 78: PC_ODR &= ~(1 << CSN);
+	ldw	x, #0x500a
+	ld	a, (x)
+	and	a, #0xf7
+	ld	(x), a
+;	joysticksend.c: 79: ret = write_spi (reg);
+	ld	a, (0x05, sp)
+	push	a
+	call	_write_spi
+	addw	sp, #1
+	ld	(0x02, sp), a
+;	joysticksend.c: 80: for (n = 0; n < len; ++n)
+	clr	(0x01, sp)
+00103$:
+	ld	a, (0x01, sp)
+	cp	a, (0x08, sp)
+	jrnc	00101$
+;	joysticksend.c: 81: write_spi (array[n]);
+	clrw	x
+	ld	a, (0x01, sp)
+	ld	xl, a
+	addw	x, (0x06, sp)
+	ld	a, (x)
+	push	a
+	call	_write_spi
+	pop	a
+;	joysticksend.c: 80: for (n = 0; n < len; ++n)
+	inc	(0x01, sp)
+	jra	00103$
+00101$:
+;	joysticksend.c: 82: PC_ODR |= (1 << CSN);
+	ldw	x, #0x500a
+	ld	a, (x)
+	or	a, #0x08
+	ld	(x), a
+;	joysticksend.c: 83: return (ret);
+	ld	a, (0x02, sp)
+	addw	sp, #2
+	ret
+;	joysticksend.c: 85: UCHAR read_spi_buf (UCHAR reg, UCHAR *array, UCHAR len) {
+;	-----------------------------------------
+;	 function read_spi_buf
+;	-----------------------------------------
+_read_spi_buf:
+	sub	sp, #2
+;	joysticksend.c: 87: PC_ODR &= ~(1 << CSN);
+	ldw	x, #0x500a
+	ld	a, (x)
+	and	a, #0xf7
+	ld	(x), a
+;	joysticksend.c: 88: ret = write_spi (reg);
+	ld	a, (0x05, sp)
+	push	a
+	call	_write_spi
+	addw	sp, #1
+	ld	(0x01, sp), a
+;	joysticksend.c: 89: for (n = 0; n < len; ++n)
+	clr	(0x02, sp)
+00103$:
+	ld	a, (0x02, sp)
+	cp	a, (0x08, sp)
+	jrnc	00101$
+;	joysticksend.c: 90: array[n] = write_spi (NOP);
+	clrw	x
+	ld	a, (0x02, sp)
+	ld	xl, a
+	addw	x, (0x06, sp)
+	pushw	x
+	push	#0xff
+	call	_write_spi
+	addw	sp, #1
+	popw	x
+	ld	(x), a
+;	joysticksend.c: 89: for (n = 0; n < len; ++n)
+	inc	(0x02, sp)
+	jra	00103$
+00101$:
+;	joysticksend.c: 91: PC_ODR |= (1 << CSN);
+	ldw	x, #0x500a
+	ld	a, (x)
+	or	a, #0x08
+	ld	(x), a
+;	joysticksend.c: 92: return (ret);
+	ld	a, (0x01, sp)
+	addw	sp, #2
+	ret
+;	joysticksend.c: 94: void InitializeSPI () {
+;	-----------------------------------------
+;	 function InitializeSPI
+;	-----------------------------------------
+_InitializeSPI:
+;	joysticksend.c: 95: SPI_CR1 = MSBFIRST | SPI_ENABLE | BR_DIV256 | MASTER | CPOL0 | CPHA0;
+	ldw	x, #0x5200
+	ld	a, #0x7c
+	ld	(x), a
+;	joysticksend.c: 96: SPI_CR2 = BDM_2LINE | CRCEN_OFF | CRCNEXT_TXBUF | FULL_DUPLEX | SSM_DISABLE;
+	ldw	x, #0x5201
+	clr	(x)
+;	joysticksend.c: 97: SPI_ICR = TXIE_MASKED | RXIE_MASKED | ERRIE_MASKED | WKIE_MASKED;
+	ldw	x, #0x5202
+	clr	(x)
+;	joysticksend.c: 98: PC_DDR = (1 << PC3) | (1 << PC4); // output mode
+	ldw	x, #0x500c
+	ld	a, #0x18
+	ld	(x), a
+;	joysticksend.c: 99: PC_CR1 = (1 << PC3) | (1 << PC4); // push-pull
+	ldw	x, #0x500d
+	ld	a, #0x18
+	ld	(x), a
+;	joysticksend.c: 100: PC_CR2 = (1 << PC3) | (1 << PC4); // up to 10MHz speed
+	ldw	x, #0x500e
+	ld	a, #0x18
+	ld	(x), a
+;	joysticksend.c: 102: PC_ODR &= ~(1 << CE);
+	ldw	x, #0x500a
+	ld	a, (x)
+	and	a, #0xef
+	ld	(x), a
+	ret
+;	joysticksend.c: 104: void InitializeSystemClock() {
 ;	-----------------------------------------
 ;	 function InitializeSystemClock
 ;	-----------------------------------------
 _InitializeSystemClock:
-;	joysticksend.c: 22: CLK_ICKR = 0;                       //  Reset the Internal Clock Register.
+;	joysticksend.c: 105: CLK_ICKR = 0;                       //  Reset the Internal Clock Register.
 	ldw	x, #0x50c0
 	clr	(x)
-;	joysticksend.c: 23: CLK_ICKR = CLK_HSIEN;               //  Enable the HSI.
+;	joysticksend.c: 106: CLK_ICKR = CLK_HSIEN;               //  Enable the HSI.
 	ldw	x, #0x50c0
 	ld	a, #0x01
 	ld	(x), a
-;	joysticksend.c: 24: CLK_ECKR = 0;                       //  Disable the external clock.
+;	joysticksend.c: 107: CLK_ECKR = 0;                       //  Disable the external clock.
 	ldw	x, #0x50c1
 	clr	(x)
-;	joysticksend.c: 25: while ((CLK_ICKR & CLK_HSIRDY) == 0);       //  Wait for the HSI to be ready for use.
+;	joysticksend.c: 108: while ((CLK_ICKR & CLK_HSIRDY) == 0);       //  Wait for the HSI to be ready for use.
 00101$:
 	ldw	x, #0x50c0
 	ld	a, (x)
 	bcp	a, #0x02
 	jreq	00101$
-;	joysticksend.c: 26: CLK_CKDIVR = 0;                     //  Ensure the clocks are running at full speed.
+;	joysticksend.c: 109: CLK_CKDIVR = 0;                     //  Ensure the clocks are running at full speed.
 	ldw	x, #0x50c6
 	clr	(x)
-;	joysticksend.c: 27: CLK_PCKENR1 = 0xff;                 //  Enable all peripheral clocks.
+;	joysticksend.c: 110: CLK_PCKENR1 = 0xff;                 //  Enable all peripheral clocks.
 	ldw	x, #0x50c7
 	ld	a, #0xff
 	ld	(x), a
-;	joysticksend.c: 28: CLK_PCKENR2 = 0xff;                 //  Ditto.
+;	joysticksend.c: 111: CLK_PCKENR2 = 0xff;                 //  Ditto.
 	ldw	x, #0x50ca
 	ld	a, #0xff
 	ld	(x), a
-;	joysticksend.c: 29: CLK_CCOR = 0;                       //  Turn off CCO.
+;	joysticksend.c: 112: CLK_CCOR = 0;                       //  Turn off CCO.
 	ldw	x, #0x50c9
 	clr	(x)
-;	joysticksend.c: 30: CLK_HSITRIMR = 0;                   //  Turn off any HSIU trimming.
+;	joysticksend.c: 113: CLK_HSITRIMR = 0;                   //  Turn off any HSIU trimming.
 	ldw	x, #0x50cc
 	clr	(x)
-;	joysticksend.c: 31: CLK_SWIMCCR = 0;                    //  Set SWIM to run at clock / 2.
+;	joysticksend.c: 114: CLK_SWIMCCR = 0;                    //  Set SWIM to run at clock / 2.
 	ldw	x, #0x50cd
 	clr	(x)
-;	joysticksend.c: 32: CLK_SWR = 0xe1;                     //  Use HSI as the clock source.
+;	joysticksend.c: 115: CLK_SWR = 0xe1;                     //  Use HSI as the clock source.
 	ldw	x, #0x50c4
 	ld	a, #0xe1
 	ld	(x), a
-;	joysticksend.c: 33: CLK_SWCR = 0;                       //  Reset the clock switch control register.
+;	joysticksend.c: 116: CLK_SWCR = 0;                       //  Reset the clock switch control register.
 	ldw	x, #0x50c5
 	clr	(x)
-;	joysticksend.c: 34: CLK_SWCR = CLK_SWEN;                //  Enable switching.
+;	joysticksend.c: 117: CLK_SWCR = CLK_SWEN;                //  Enable switching.
 	ldw	x, #0x50c5
 	ld	a, #0x02
 	ld	(x), a
-;	joysticksend.c: 35: while ((CLK_SWCR & CLK_SWBSY) != 0);        //  Pause while the clock switch is busy.
+;	joysticksend.c: 118: while ((CLK_SWCR & CLK_SWBSY) != 0);        //  Pause while the clock switch is busy.
 00104$:
 	ldw	x, #0x50c5
 	ld	a, (x)
 	srl	a
 	jrc	00104$
 	ret
-;	joysticksend.c: 37: void delay (int time_ms) {
+;	joysticksend.c: 120: void delay (int time_ms) {
 ;	-----------------------------------------
 ;	 function delay
 ;	-----------------------------------------
 _delay:
 	sub	sp, #10
-;	joysticksend.c: 39: for (x = 0; x < 1036*time_ms; ++x)
+;	joysticksend.c: 122: for (x = 0; x < 1036*time_ms; ++x)
 	clrw	x
 	ldw	(0x03, sp), x
 	ldw	(0x01, sp), x
@@ -234,26 +522,26 @@ _delay:
 	push	#0x04
 	call	__mulint
 	addw	sp, #4
-	ldw	(0x09, sp), x
+	ldw	(0x05, sp), x
 00103$:
-	ldw	y, (0x09, sp)
-	ldw	(0x07, sp), y
-	ld	a, (0x07, sp)
+	ldw	y, (0x05, sp)
+	ldw	(0x09, sp), y
+	ld	a, (0x09, sp)
 	rlc	a
 	clr	a
 	sbc	a, #0x00
-	ld	(0x06, sp), a
-	ld	(0x05, sp), a
+	ld	(0x08, sp), a
+	ld	(0x07, sp), a
 	ldw	x, (0x03, sp)
-	cpw	x, (0x07, sp)
+	cpw	x, (0x09, sp)
 	ld	a, (0x02, sp)
-	sbc	a, (0x06, sp)
+	sbc	a, (0x08, sp)
 	ld	a, (0x01, sp)
-	sbc	a, (0x05, sp)
+	sbc	a, (0x07, sp)
 	jrsge	00105$
-;	joysticksend.c: 40: __asm__("nop");
+;	joysticksend.c: 123: __asm__("nop");
 	nop
-;	joysticksend.c: 39: for (x = 0; x < 1036*time_ms; ++x)
+;	joysticksend.c: 122: for (x = 0; x < 1036*time_ms; ++x)
 	ldw	y, (0x03, sp)
 	addw	y, #0x0001
 	ld	a, (0x02, sp)
@@ -268,920 +556,873 @@ _delay:
 00105$:
 	addw	sp, #10
 	ret
-;	joysticksend.c: 42: void i2c_read (unsigned char *x) {
+;	joysticksend.c: 197: void init_io(void)
 ;	-----------------------------------------
-;	 function i2c_read
+;	 function init_io
 ;	-----------------------------------------
-_i2c_read:
-;	joysticksend.c: 43: while ((I2C_SR1 & I2C_RXNE) == 0);
-00101$:
-	ldw	x, #0x5217
+_init_io:
+;	joysticksend.c: 206: PC_ODR &= ~(1 << CE);
+	ldw	x, #0x500a
 	ld	a, (x)
-	bcp	a, #0x40
-	jreq	00101$
-;	joysticksend.c: 44: *x = I2C_DR;
-	ldw	y, (0x03, sp)
-	ldw	x, #0x5216
+	and	a, #0xef
+	ld	(x), a
+;	joysticksend.c: 208: PC_ODR |= (1 << CSN);
+	ldw	x, #0x500a
 	ld	a, (x)
-	ld	(y), a
-	ret
-;	joysticksend.c: 46: void i2c_set_nak (void) {
-;	-----------------------------------------
-;	 function i2c_set_nak
-;	-----------------------------------------
-_i2c_set_nak:
-;	joysticksend.c: 47: I2C_CR2 &= ~I2C_ACK;
-	ldw	x, #0x5211
-	ld	a, (x)
-	and	a, #0xfb
+	or	a, #0x08
 	ld	(x), a
 	ret
-;	joysticksend.c: 49: void i2c_set_stop (void) {
+;	joysticksend.c: 214: void rf_switch_bank(unsigned char bankindex)
 ;	-----------------------------------------
-;	 function i2c_set_stop
+;	 function rf_switch_bank
 ;	-----------------------------------------
-_i2c_set_stop:
-;	joysticksend.c: 50: I2C_CR2 |= I2C_STOP;
-	ldw	x, #0x5211
-	ld	a, (x)
-	or	a, #0x02
-	ld	(x), a
-	ret
-;	joysticksend.c: 52: void i2c_send_reg (UCHAR addr) {
-;	-----------------------------------------
-;	 function i2c_send_reg
-;	-----------------------------------------
-_i2c_send_reg:
-	sub	sp, #2
-;	joysticksend.c: 54: reg = I2C_SR1;
-	ldw	x, #0x5217
-	ld	a, (x)
-	clrw	x
-	ld	xl, a
-	ldw	(0x01, sp), x
-;	joysticksend.c: 55: reg = I2C_SR3;
-	ldw	x, #0x5219
-	ld	a, (x)
-	clrw	x
-	ld	xl, a
-	ldw	(0x01, sp), x
-;	joysticksend.c: 56: I2C_DR = addr;
-	ldw	x, #0x5216
-	ld	a, (0x05, sp)
-	ld	(x), a
-;	joysticksend.c: 57: while ((I2C_SR1 & I2C_TXE) == 0);
-00101$:
-	ldw	x, #0x5217
-	ld	a, (x)
-	sll	a
-	jrnc	00101$
-	addw	sp, #2
-	ret
-;	joysticksend.c: 61: void UARTPrintF (char *message) {
-;	-----------------------------------------
-;	 function UARTPrintF
-;	-----------------------------------------
-_UARTPrintF:
-;	joysticksend.c: 62: char *ch = message;
-	ldw	y, (0x03, sp)
-;	joysticksend.c: 63: while (*ch) {
-00104$:
-	ld	a, (y)
-	tnz	a
-	jreq	00107$
-;	joysticksend.c: 64: UART1_DR = (unsigned char) *ch;     //  Put the next character into the data transmission register.
-	ldw	x, #0x5231
-	ld	(x), a
-;	joysticksend.c: 65: while ((UART1_SR & SR_TXE) == 0);   //  Wait for transmission to complete.
-00101$:
-	ldw	x, #0x5230
-	ld	a, (x)
-	sll	a
-	jrnc	00101$
-;	joysticksend.c: 66: ch++;                               //  Grab the next character.
-	incw	y
-	jra	00104$
-00107$:
-	ret
-;	joysticksend.c: 70: void print_UCHAR_hex (unsigned char buffer) {
-;	-----------------------------------------
-;	 function print_UCHAR_hex
-;	-----------------------------------------
-_print_UCHAR_hex:
-	sub	sp, #12
-;	joysticksend.c: 73: a = (buffer >> 4);
-	ld	a, (0x0f, sp)
-	swap	a
-	and	a, #0x0f
-	clrw	x
-	ld	xl, a
-;	joysticksend.c: 74: if (a > 9)
-	cpw	x, #0x0009
-	jrsle	00102$
-;	joysticksend.c: 75: a = a + 'a' - 10;
-	addw	x, #0x0057
-	ldw	(0x03, sp), x
-	jra	00103$
-00102$:
-;	joysticksend.c: 77: a += '0';
-	addw	x, #0x0030
-	ldw	(0x03, sp), x
-00103$:
-;	joysticksend.c: 78: b = buffer & 0x0f;
-	ld	a, (0x0f, sp)
-	and	a, #0x0f
-	clrw	x
-	ld	xl, a
-;	joysticksend.c: 79: if (b > 9)
-	cpw	x, #0x0009
-	jrsle	00105$
-;	joysticksend.c: 80: b = b + 'a' - 10;
-	addw	x, #0x0057
-	ldw	(0x01, sp), x
-	jra	00106$
-00105$:
-;	joysticksend.c: 82: b += '0';
-	addw	x, #0x0030
-	ldw	(0x01, sp), x
-00106$:
-;	joysticksend.c: 83: message[0] = a;
-	ldw	y, sp
-	addw	y, #5
-	ld	a, (0x04, sp)
-	ld	(y), a
-;	joysticksend.c: 84: message[1] = b;
-	ldw	x, y
-	incw	x
-	ld	a, (0x02, sp)
-	ld	(x), a
-;	joysticksend.c: 85: message[2] = 0;
-	ldw	x, y
-	incw	x
-	incw	x
-	clr	(x)
-;	joysticksend.c: 86: UARTPrintF (message);
-	pushw	y
-	call	_UARTPrintF
-	addw	sp, #2
-	addw	sp, #12
-	ret
-;	joysticksend.c: 89: void i2c_send_address (UCHAR addr, UCHAR mode) {
-;	-----------------------------------------
-;	 function i2c_send_address
-;	-----------------------------------------
-_i2c_send_address:
-	sub	sp, #3
-;	joysticksend.c: 91: reg = I2C_SR1;
-	ldw	x, #0x5217
-	ld	a, (x)
-	clrw	x
-	ld	xl, a
-	ldw	(0x01, sp), x
-;	joysticksend.c: 92: I2C_DR = (addr << 1) | mode;
-	ld	a, (0x06, sp)
-	sll	a
-	or	a, (0x07, sp)
-	ldw	x, #0x5216
-	ld	(x), a
-;	joysticksend.c: 93: if (mode == I2C_READ) {
-	ld	a, (0x07, sp)
-	cp	a, #0x01
-	jrne	00127$
-	ld	a, #0x01
-	ld	(0x03, sp), a
-	jra	00128$
-00127$:
-	clr	(0x03, sp)
-00128$:
-	tnz	(0x03, sp)
-	jreq	00103$
-;	joysticksend.c: 94: I2C_OARL = 0;
-	ldw	x, #0x5213
-	clr	(x)
-;	joysticksend.c: 95: I2C_OARH = 0;
-	ldw	x, #0x5214
-	clr	(x)
-;	joysticksend.c: 98: while ((I2C_SR1 & I2C_ADDR) == 0);
-00103$:
-;	joysticksend.c: 91: reg = I2C_SR1;
-	ldw	x, #0x5217
-	ld	a, (x)
-;	joysticksend.c: 98: while ((I2C_SR1 & I2C_ADDR) == 0);
-	bcp	a, #0x02
-	jreq	00103$
-;	joysticksend.c: 99: if (mode == I2C_READ)
-	tnz	(0x03, sp)
-	jreq	00108$
-;	joysticksend.c: 100: UNSET (I2C_SR1, I2C_ADDR);
-	and	a, #0xfd
-	ldw	x, #0x5217
-	ld	(x), a
-00108$:
-	addw	sp, #3
-	ret
-;	joysticksend.c: 103: void i2c_set_start_ack (void) {
-;	-----------------------------------------
-;	 function i2c_set_start_ack
-;	-----------------------------------------
-_i2c_set_start_ack:
-;	joysticksend.c: 104: I2C_CR2 = I2C_ACK | I2C_START;
-	ldw	x, #0x5211
-	ld	a, #0x05
-	ld	(x), a
-;	joysticksend.c: 105: while ((I2C_SR1 & I2C_SB) == 0);
-00101$:
-	ldw	x, #0x5217
-	ld	a, (x)
-	srl	a
-	jrnc	00101$
-	ret
-;	joysticksend.c: 112: void print_byte_hex (unsigned char buffer) {
-;	-----------------------------------------
-;	 function print_byte_hex
-;	-----------------------------------------
-_print_byte_hex:
-	sub	sp, #12
-;	joysticksend.c: 115: a = (buffer >> 4);
-	ld	a, (0x0f, sp)
-	swap	a
-	and	a, #0x0f
-	clrw	x
-	ld	xl, a
-;	joysticksend.c: 116: if (a > 9)
-	cpw	x, #0x0009
-	jrsle	00102$
-;	joysticksend.c: 117: a = a + 'a' - 10;
-	addw	x, #0x0057
-	ldw	(0x03, sp), x
-	jra	00103$
-00102$:
-;	joysticksend.c: 119: a += '0'; 
-	addw	x, #0x0030
-	ldw	(0x03, sp), x
-00103$:
-;	joysticksend.c: 120: b = buffer & 0x0f;
-	ld	a, (0x0f, sp)
-	and	a, #0x0f
-	clrw	x
-	ld	xl, a
-;	joysticksend.c: 121: if (b > 9)
-	cpw	x, #0x0009
-	jrsle	00105$
-;	joysticksend.c: 122: b = b + 'a' - 10;
-	addw	x, #0x0057
-	ldw	(0x01, sp), x
-	jra	00106$
-00105$:
-;	joysticksend.c: 124: b += '0'; 
-	addw	x, #0x0030
-	ldw	(0x01, sp), x
-00106$:
-;	joysticksend.c: 125: message[0] = a;
-	ldw	y, sp
-	addw	y, #5
-	ld	a, (0x04, sp)
-	ld	(y), a
-;	joysticksend.c: 126: message[1] = b;
-	ldw	x, y
-	incw	x
-	ld	a, (0x02, sp)
-	ld	(x), a
-;	joysticksend.c: 127: message[2] = 0;
-	ldw	x, y
-	incw	x
-	incw	x
-	clr	(x)
-;	joysticksend.c: 128: UARTPrintF (message);
-	pushw	y
-	call	_UARTPrintF
-	addw	sp, #2
-	addw	sp, #12
-	ret
-;	joysticksend.c: 132: unsigned char i2c_read_register (UCHAR addr, UCHAR rg) {
-;	-----------------------------------------
-;	 function i2c_read_register
-;	-----------------------------------------
-_i2c_read_register:
-	sub	sp, #2
-;	joysticksend.c: 135: i2c_set_start_ack ();
-	call	_i2c_set_start_ack
-;	joysticksend.c: 136: i2c_send_address (addr, I2C_WRITE);
-	push	#0x00
-	ld	a, (0x06, sp)
+_rf_switch_bank:
 	push	a
-	call	_i2c_send_address
+;	joysticksend.c: 217: temp1 = bankindex;
+	ld	a, (0x04, sp)
+	ld	(0x01, sp), a
+;	joysticksend.c: 219: temp0 = write_spi(iRF_BANK0_STATUS);
+	push	#0x07
+	call	_write_spi
+	addw	sp, #1
+;	joysticksend.c: 221: if((temp0&0x80)!=temp1)
+	and	a, #0x80
+	cp	a, (0x01, sp)
+	jreq	00103$
+;	joysticksend.c: 223: write_spi_reg(iRF_CMD_ACTIVATE,0x53);
+	push	#0x53
+	push	#0x50
+	call	_write_spi_reg
 	addw	sp, #2
-;	joysticksend.c: 137: i2c_send_reg (rg);
-	ld	a, (0x06, sp)
-	push	a
-	call	_i2c_send_reg
+00103$:
 	pop	a
-;	joysticksend.c: 138: i2c_set_start_ack ();
-	call	_i2c_set_start_ack
-;	joysticksend.c: 139: i2c_send_address (addr, I2C_READ);
-	push	#0x01
-	ld	a, (0x06, sp)
-	push	a
-	call	_i2c_send_address
-	addw	sp, #2
-;	joysticksend.c: 140: reg = I2C_SR1;
-	ldw	x, #0x5217
-	ld	a, (x)
-	ld	(0x02, sp), a
-;	joysticksend.c: 141: reg = I2C_SR3;
-	ldw	x, #0x5219
-	ld	a, (x)
-	ld	(0x02, sp), a
-;	joysticksend.c: 142: i2c_set_nak ();
-	call	_i2c_set_nak
-;	joysticksend.c: 143: i2c_set_stop ();
-	call	_i2c_set_stop
-;	joysticksend.c: 144: i2c_read (&x);
+	ret
+;	joysticksend.c: 230: void SE8R01_Calibration()
+;	-----------------------------------------
+;	 function SE8R01_Calibration
+;	-----------------------------------------
+_SE8R01_Calibration:
+	sub	sp, #13
+;	joysticksend.c: 233: rf_switch_bank(iBANK0);
+	push	#0x00
+	call	_rf_switch_bank
+	pop	a
+;	joysticksend.c: 234: temp[0]=0x03;
 	ldw	x, sp
 	incw	x
+	ldw	(0x0c, sp), x
+	ldw	x, (0x0c, sp)
+	ld	a, #0x03
+	ld	(x), a
+;	joysticksend.c: 235: write_spi_buf(iRF_CMD_WRITE_REG|iRF_BANK0_CONFIG,temp, 1);
+	ldw	x, (0x0c, sp)
+	push	#0x01
 	pushw	x
-	call	_i2c_read
-	addw	sp, #2
-;	joysticksend.c: 145: return (x);
-	ld	a, (0x01, sp)
-	addw	sp, #2
-	ret
-;	joysticksend.c: 148: void InitializeI2C (void) {
-;	-----------------------------------------
-;	 function InitializeI2C
-;	-----------------------------------------
-_InitializeI2C:
-;	joysticksend.c: 149: I2C_CR1 = 0;   //  Disable I2C before configuration starts. PE bit is bit 0
-	ldw	x, #0x5210
+	push	#0x20
+	call	_write_spi_buf
+	addw	sp, #4
+;	joysticksend.c: 237: temp[0]=0x32;
+	ldw	x, (0x0c, sp)
+	ld	a, #0x32
+	ld	(x), a
+;	joysticksend.c: 239: write_spi_buf(iRF_CMD_WRITE_REG|iRF_BANK0_RF_CH, temp,1);
+	ldw	x, (0x0c, sp)
+	push	#0x01
+	pushw	x
+	push	#0x25
+	call	_write_spi_buf
+	addw	sp, #4
+;	joysticksend.c: 243: if (SE8R01_DR_2M==1)
+	ldw	x, _SE8R01_DR_2M+0
+	cpw	x, #0x0001
+	jrne	00105$
+;	joysticksend.c: 244: {temp[0]=0x48;}
+	ldw	x, (0x0c, sp)
+	ld	a, #0x48
+	ld	(x), a
+	jra	00106$
+00105$:
+;	joysticksend.c: 245: else if (SE8R01_DR_1M==1)
+	ldw	x, _SE8R01_DR_1M+0
+	cpw	x, #0x0001
+	jrne	00102$
+;	joysticksend.c: 246: {temp[0]=0x40;}
+	ldw	x, (0x0c, sp)
+	ld	a, #0x40
+	ld	(x), a
+	jra	00106$
+00102$:
+;	joysticksend.c: 248: {temp[0]=0x68;}   
+	ldw	x, (0x0c, sp)
+	ld	a, #0x68
+	ld	(x), a
+00106$:
+;	joysticksend.c: 250: write_spi_buf(iRF_CMD_WRITE_REG|iRF_BANK0_RF_SETUP,temp,1);
+	ldw	x, (0x0c, sp)
+	push	#0x01
+	pushw	x
+	push	#0x26
+	call	_write_spi_buf
+	addw	sp, #4
+;	joysticksend.c: 251: temp[0]=0x77;
+	ldw	x, (0x0c, sp)
+	ld	a, #0x77
+	ld	(x), a
+;	joysticksend.c: 252: write_spi_buf(iRF_CMD_WRITE_REG|iRF_BANK0_PRE_GURD, temp,1);
+	ldw	x, (0x0c, sp)
+	push	#0x01
+	pushw	x
+	push	#0x3f
+	call	_write_spi_buf
+	addw	sp, #4
+;	joysticksend.c: 254: rf_switch_bank(iBANK1);
+	push	#0x80
+	call	_rf_switch_bank
+	pop	a
+;	joysticksend.c: 255: temp[0]=0x40;
+	ldw	x, (0x0c, sp)
+	ld	a, #0x40
+	ld	(x), a
+;	joysticksend.c: 256: temp[1]=0x00;
+	ldw	x, (0x0c, sp)
+	incw	x
+	ldw	(0x0a, sp), x
+	ldw	x, (0x0a, sp)
 	clr	(x)
-;	joysticksend.c: 153: I2C_FREQR = 16;                     //  Set the internal clock frequency (MHz).
-	ldw	x, #0x5212
+;	joysticksend.c: 257: temp[2]=0x10;
+	ldw	x, (0x0c, sp)
+	incw	x
+	incw	x
+	ldw	(0x08, sp), x
+	ldw	x, (0x08, sp)
 	ld	a, #0x10
 	ld	(x), a
-;	joysticksend.c: 154: UNSET (I2C_CCRH, I2C_FS);           //  I2C running is standard mode.
-	bres	0x521c, #7
-;	joysticksend.c: 156: I2C_CCRL = 0xa0;                    //  SCL clock speed is 50 kHz.
-	ldw	x, #0x521b
-	ld	a, #0xa0
+;	joysticksend.c: 259: {temp[3]=0xE6;}
+	ldw	x, (0x0c, sp)
+	addw	x, #0x0003
+	ldw	(0x06, sp), x
+;	joysticksend.c: 258: if (SE8R01_DR_2M==1)
+	ldw	x, _SE8R01_DR_2M+0
+	cpw	x, #0x0001
+	jrne	00108$
+;	joysticksend.c: 259: {temp[3]=0xE6;}
+	ldw	x, (0x06, sp)
+	ld	a, #0xe6
 	ld	(x), a
-;	joysticksend.c: 158: I2C_CCRH &= 0x00;	// Clears lower 4 bits "CCR"
-	ldw	x, #0x521c
-	clr	(x)
-;	joysticksend.c: 162: UNSET (I2C_OARH, I2C_ADDMODE);      //  7 bit address mode.
-	bres	0x5214, #7
-;	joysticksend.c: 163: SET (I2C_OARH, I2C_ADDCONF);        //  Docs say this must always be 1.
-	ldw	x, #0x5214
-	ld	a, (x)
-	or	a, #0x40
+	jra	00109$
+00108$:
+;	joysticksend.c: 261: {temp[3]=0xE4;}
+	ldw	x, (0x06, sp)
+	ld	a, #0xe4
 	ld	(x), a
-;	joysticksend.c: 167: I2C_TRISER = 17;
-	ldw	x, #0x521d
-	ld	a, #0x11
+00109$:
+;	joysticksend.c: 263: write_spi_buf(iRF_CMD_WRITE_REG|iRF_BANK1_PLL_CTL0, temp, 4);
+	ldw	x, (0x0c, sp)
+	push	#0x04
+	pushw	x
+	push	#0x21
+	call	_write_spi_buf
+	addw	sp, #4
+;	joysticksend.c: 265: temp[0]=0x20;
+	ldw	x, (0x0c, sp)
+	ld	a, #0x20
 	ld	(x), a
-;	joysticksend.c: 175: I2C_CR1 = I2C_PE;	// Enables port
-	ldw	x, #0x5210
-	ld	a, #0x01
-	ld	(x), a
-	ret
-;	joysticksend.c: 181: void InitializeUART() {
-;	-----------------------------------------
-;	 function InitializeUART
-;	-----------------------------------------
-_InitializeUART:
-;	joysticksend.c: 191: UART1_CR1 = 0;
-	ldw	x, #0x5234
-	clr	(x)
-;	joysticksend.c: 192: UART1_CR2 = 0;
-	ldw	x, #0x5235
-	clr	(x)
-;	joysticksend.c: 193: UART1_CR4 = 0;
-	ldw	x, #0x5237
-	clr	(x)
-;	joysticksend.c: 194: UART1_CR3 = 0;
-	ldw	x, #0x5236
-	clr	(x)
-;	joysticksend.c: 195: UART1_CR5 = 0;
-	ldw	x, #0x5238
-	clr	(x)
-;	joysticksend.c: 196: UART1_GTR = 0;
-	ldw	x, #0x5239
-	clr	(x)
-;	joysticksend.c: 197: UART1_PSCR = 0;
-	ldw	x, #0x523a
-	clr	(x)
-;	joysticksend.c: 201: UNSET (UART1_CR1, CR1_M);        //  8 Data bits.
-	ldw	x, #0x5234
-	ld	a, (x)
-	and	a, #0xef
-	ld	(x), a
-;	joysticksend.c: 202: UNSET (UART1_CR1, CR1_PCEN);     //  Disable parity.
-	ldw	x, #0x5234
-	ld	a, (x)
-	and	a, #0xfb
-	ld	(x), a
-;	joysticksend.c: 203: UNSET (UART1_CR3, CR3_STOPH);    //  1 stop bit.
-	ldw	x, #0x5236
-	ld	a, (x)
-	and	a, #0xdf
-	ld	(x), a
-;	joysticksend.c: 204: UNSET (UART1_CR3, CR3_STOPL);    //  1 stop bit.
-	ldw	x, #0x5236
-	ld	a, (x)
-	and	a, #0xef
-	ld	(x), a
-;	joysticksend.c: 205: UART1_BRR2 = 0x0a;      //  Set the baud rate registers to 115200 baud
-	ldw	x, #0x5233
-	ld	a, #0x0a
-	ld	(x), a
-;	joysticksend.c: 206: UART1_BRR1 = 0x08;      //  based upon a 16 MHz system clock.
-	ldw	x, #0x5232
+;	joysticksend.c: 266: temp[1]=0x08;
+	ldw	x, (0x0a, sp)
 	ld	a, #0x08
 	ld	(x), a
-;	joysticksend.c: 210: UNSET (UART1_CR2, CR2_TEN);      //  Disable transmit.
-	ldw	x, #0x5235
-	ld	a, (x)
-	and	a, #0xf7
+;	joysticksend.c: 267: temp[2]=0x50;
+	ldw	x, (0x08, sp)
+	ld	a, #0x50
 	ld	(x), a
-;	joysticksend.c: 211: UNSET (UART1_CR2, CR2_REN);      //  Disable receive.
-	ldw	x, #0x5235
-	ld	a, (x)
-	and	a, #0xfb
+;	joysticksend.c: 268: temp[3]=0x40;
+	ldw	x, (0x06, sp)
+	ld	a, #0x40
 	ld	(x), a
-;	joysticksend.c: 215: SET (UART1_CR3, CR3_CPOL);
-	ldw	x, #0x5236
-	ld	a, (x)
-	or	a, #0x04
+;	joysticksend.c: 269: temp[4]=0x50;
+	ldw	x, (0x0c, sp)
+	ld	a, #0x50
+	ld	(0x0004, x), a
+;	joysticksend.c: 270: write_spi_buf(iRF_CMD_WRITE_REG|iRF_BANK1_CAL_CTL, temp, 5);
+	ldw	x, (0x0c, sp)
+	push	#0x05
+	pushw	x
+	push	#0x23
+	call	_write_spi_buf
+	addw	sp, #4
+;	joysticksend.c: 272: temp[0]=0x00;
+	ldw	x, (0x0c, sp)
+	clr	(x)
+;	joysticksend.c: 273: temp[1]=0x00;
+	ldw	x, (0x0a, sp)
+	clr	(x)
+;	joysticksend.c: 274: if (SE8R01_DR_2M==1)
+	ldw	x, _SE8R01_DR_2M+0
+	cpw	x, #0x0001
+	jrne	00111$
+;	joysticksend.c: 275: { temp[2]=0x1E;}
+	ldw	x, (0x08, sp)
+	ld	a, #0x1e
 	ld	(x), a
-;	joysticksend.c: 216: SET (UART1_CR3, CR3_CPHA);
-	ldw	x, #0x5236
-	ld	a, (x)
-	or	a, #0x02
+	jra	00112$
+00111$:
+;	joysticksend.c: 277: { temp[2]=0x1F;}
+	ldw	x, (0x08, sp)
+	ld	a, #0x1f
 	ld	(x), a
-;	joysticksend.c: 217: SET (UART1_CR3, CR3_LBCL);
-	bset	0x5236, #0
-;	joysticksend.c: 221: SET (UART1_CR2, CR2_TEN);
-	ldw	x, #0x5235
-	ld	a, (x)
-	or	a, #0x08
+00112$:
+;	joysticksend.c: 279: write_spi_buf(iRF_CMD_WRITE_REG|iRF_BANK1_IF_FREQ, temp, 3);
+	ldw	x, (0x0c, sp)
+	push	#0x03
+	pushw	x
+	push	#0x2a
+	call	_write_spi_buf
+	addw	sp, #4
+;	joysticksend.c: 281: if (SE8R01_DR_2M==1)
+	ldw	x, _SE8R01_DR_2M+0
+	cpw	x, #0x0001
+	jrne	00114$
+;	joysticksend.c: 282: { temp[0]=0x29;}
+	ldw	x, (0x0c, sp)
+	ld	a, #0x29
 	ld	(x), a
-;	joysticksend.c: 222: SET (UART1_CR2, CR2_REN);
-	ldw	x, #0x5235
-	ld	a, (x)
-	or	a, #0x04
+	jra	00115$
+00114$:
+;	joysticksend.c: 284: { temp[0]=0x14;}
+	ldw	x, (0x0c, sp)
+	ld	a, #0x14
 	ld	(x), a
-;	joysticksend.c: 223: UART1_CR3 = CR3_CLKEN;
-	ldw	x, #0x5236
-	ld	a, #0x08
+00115$:
+;	joysticksend.c: 286: write_spi_buf(iRF_CMD_WRITE_REG|iRF_BANK1_FDEV, temp, 1);
+	ldw	x, (0x0c, sp)
+	push	#0x01
+	pushw	x
+	push	#0x2c
+	call	_write_spi_buf
+	addw	sp, #4
+;	joysticksend.c: 288: temp[0]=0x00;
+	ldw	x, (0x0c, sp)
+	clr	(x)
+;	joysticksend.c: 289: write_spi_buf(iRF_CMD_WRITE_REG|iRF_BANK1_DAC_CAL_LOW,temp,1);
+	ldw	x, (0x0c, sp)
+	push	#0x01
+	pushw	x
+	push	#0x37
+	call	_write_spi_buf
+	addw	sp, #4
+;	joysticksend.c: 291: temp[0]=0x7F;
+	ldw	x, (0x0c, sp)
+	ld	a, #0x7f
 	ld	(x), a
-	ret
-;	joysticksend.c: 251: void tm1637Init(void)
-;	-----------------------------------------
-;	 function tm1637Init
-;	-----------------------------------------
-_tm1637Init:
-;	joysticksend.c: 253: tm1637SetBrightness(8);
-	push	#0x08
-	call	_tm1637SetBrightness
+;	joysticksend.c: 292: write_spi_buf(iRF_CMD_WRITE_REG|iRF_BANK1_DAC_CAL_HI,temp,1);
+	ldw	x, (0x0c, sp)
+	push	#0x01
+	pushw	x
+	push	#0x38
+	call	_write_spi_buf
+	addw	sp, #4
+;	joysticksend.c: 294: temp[0]=0x02;
+	ldw	x, (0x0c, sp)
+	ld	a, #0x02
+	ld	(x), a
+;	joysticksend.c: 295: temp[1]=0xC1;
+	ldw	x, (0x0a, sp)
+	ld	a, #0xc1
+	ld	(x), a
+;	joysticksend.c: 296: temp[2]=0xEB;            
+	ldw	x, (0x08, sp)
+	ld	a, #0xeb
+	ld	(x), a
+;	joysticksend.c: 297: temp[3]=0x1C;
+	ldw	x, (0x06, sp)
+	ld	a, #0x1c
+	ld	(x), a
+;	joysticksend.c: 298: write_spi_buf(iRF_CMD_WRITE_REG|iRF_BANK1_AGC_GAIN, temp,4);
+	ldw	x, (0x0c, sp)
+	push	#0x04
+	pushw	x
+	push	#0x3d
+	call	_write_spi_buf
+	addw	sp, #4
+;	joysticksend.c: 300: temp[0]=0x97;
+	ldw	x, (0x0c, sp)
+	ld	a, #0x97
+	ld	(x), a
+;	joysticksend.c: 301: temp[1]=0x64;
+	ldw	x, (0x0a, sp)
+	ld	a, #0x64
+	ld	(x), a
+;	joysticksend.c: 302: temp[2]=0x00;
+	ldw	x, (0x08, sp)
+	clr	(x)
+;	joysticksend.c: 303: temp[3]=0x81;
+	ldw	x, (0x06, sp)
+	ld	a, #0x81
+	ld	(x), a
+;	joysticksend.c: 304: write_spi_buf(iRF_CMD_WRITE_REG|iRF_BANK1_RF_IVGEN, temp, 4);
+	ldw	x, (0x0c, sp)
+	push	#0x04
+	pushw	x
+	push	#0x3e
+	call	_write_spi_buf
+	addw	sp, #4
+;	joysticksend.c: 305: rf_switch_bank(iBANK0);
+	push	#0x00
+	call	_rf_switch_bank
 	pop	a
+;	joysticksend.c: 310: delayTenMicro();
+	call	_delayTenMicro
+;	joysticksend.c: 311: PC_ODR |= (1 << CE);
+	ldw	x, #0x500a
+	ld	a, (x)
+	or	a, #0x10
+	ld	(x), a
+;	joysticksend.c: 312: delayTenMicro();
+	call	_delayTenMicro
+;	joysticksend.c: 313: delayTenMicro();
+	call	_delayTenMicro
+;	joysticksend.c: 314: delayTenMicro();
+	call	_delayTenMicro
+;	joysticksend.c: 315: PC_ODR &= ~(1 << CE);
+	ldw	x, #0x500a
+	ld	a, (x)
+	and	a, #0xef
+	ld	(x), a
+;	joysticksend.c: 316: delay(50);                            // delay 50ms waitting for calibaration.
+	push	#0x32
+	push	#0x00
+	call	_delay
+	addw	sp, #2
+;	joysticksend.c: 321: delayTenMicro();
+	call	_delayTenMicro
+;	joysticksend.c: 322: PC_ODR |= (1 << CE);
+	ldw	x, #0x500a
+	ld	a, (x)
+	or	a, #0x10
+	ld	(x), a
+;	joysticksend.c: 323: delayTenMicro();
+	call	_delayTenMicro
+;	joysticksend.c: 324: delayTenMicro();
+	call	_delayTenMicro
+;	joysticksend.c: 325: delayTenMicro();
+	call	_delayTenMicro
+;	joysticksend.c: 326: PC_ODR &= ~(1 << CE);
+	ldw	x, #0x500a
+	ld	a, (x)
+	and	a, #0xef
+	ld	(x), a
+;	joysticksend.c: 327: delay(50);                            // delay 50ms waitting for calibaration.
+	push	#0x32
+	push	#0x00
+	call	_delay
+	addw	sp, #2
+	addw	sp, #13
 	ret
-;	joysticksend.c: 258: void tm1637DisplayDecimal(long TT,unsigned int displaySeparator)
+;	joysticksend.c: 331: void SE8R01_Analog_Init()           //SE8R01 初始化
 ;	-----------------------------------------
-;	 function tm1637DisplayDecimal
+;	 function SE8R01_Analog_Init
 ;	-----------------------------------------
-_tm1637DisplayDecimal:
-	sub	sp, #19
-;	joysticksend.c: 260: unsigned int v = TT & 0x0000FFFF;
-	ld	a, (0x19, sp)
-	ld	xl, a
-	ld	a, (0x18, sp)
-	ld	xh, a
-	clr	(0x0a, sp)
-	clr	a
-	ldw	(0x05, sp), x
-;	joysticksend.c: 266: for (ii = 0; ii < 4; ++ii) {
+_SE8R01_Analog_Init:
+	sub	sp, #21
+;	joysticksend.c: 336: gtemp[0]=0x28;
+	ldw	x, #_gtemp+0
+	ldw	(0x14, sp), x
+	ldw	x, (0x14, sp)
+	ld	a, #0x28
+	ld	(x), a
+;	joysticksend.c: 337: gtemp[1]=0x32;
+	ldw	x, (0x14, sp)
+	incw	x
+	ldw	(0x12, sp), x
+	ldw	x, (0x12, sp)
+	ld	a, #0x32
+	ld	(x), a
+;	joysticksend.c: 338: gtemp[2]=0x80;
+	ldw	x, (0x14, sp)
+	incw	x
+	incw	x
+	ldw	(0x10, sp), x
+	ldw	x, (0x10, sp)
+	ld	a, #0x80
+	ld	(x), a
+;	joysticksend.c: 339: gtemp[3]=0x90;
+	ldw	x, (0x14, sp)
+	addw	x, #0x0003
+	ldw	(0x0e, sp), x
+	ldw	x, (0x0e, sp)
+	ld	a, #0x90
+	ld	(x), a
+;	joysticksend.c: 340: gtemp[4]=0x00;
+	ldw	x, (0x14, sp)
+	addw	x, #0x0004
+	clr	(x)
+;	joysticksend.c: 341: write_spi_buf(iRF_CMD_WRITE_REG|iRF_BANK0_SETUP_VALUE, gtemp, 5);
+	ldw	x, (0x14, sp)
+	push	#0x05
+	pushw	x
+	push	#0x3e
+	call	_write_spi_buf
+	addw	sp, #4
+;	joysticksend.c: 342: delay(2);
+	push	#0x02
+	push	#0x00
+	call	_delay
+	addw	sp, #2
+;	joysticksend.c: 345: rf_switch_bank(iBANK1);
+	push	#0x80
+	call	_rf_switch_bank
+	pop	a
+;	joysticksend.c: 347: temp[0]=0x40;
 	ldw	x, sp
 	incw	x
-	ldw	(0x0f, sp), x
-	ldw	x, #_segmentMap+0
-	ldw	(0x0d, sp), x
-	clrw	y
-00106$:
-;	joysticksend.c: 267: digitArr[ii] = segmentMap[v % 10];
-	ldw	x, y
-	addw	x, (0x0f, sp)
-	ldw	(0x11, sp), x
-	pushw	y
-	ldw	x, (0x07, sp)
-	ldw	y, #0x000a
-	divw	x, y
-	ldw	x, y
-	popw	y
-	addw	x, (0x0d, sp)
-	ld	a, (x)
-	ldw	x, (0x11, sp)
+	ldw	(0x0c, sp), x
+	ldw	x, (0x0c, sp)
+	ld	a, #0x40
 	ld	(x), a
-;	joysticksend.c: 268: if (ii == 2 && displaySeparator) {
-	cpw	y, #0x0002
-	jrne	00102$
-	ldw	x, (0x1a, sp)
-	jreq	00102$
-;	joysticksend.c: 269: digitArr[ii] |= 1 << 7;
-	ldw	x, (0x11, sp)
-	ld	a, (x)
-	or	a, #0x80
-	ldw	x, (0x11, sp)
-	ld	(x), a
-00102$:
-;	joysticksend.c: 271: v /= 10;
-	pushw	y
-	ldw	x, (0x07, sp)
-	ldw	y, #0x000a
-	divw	x, y
-	popw	y
-	ldw	(0x05, sp), x
-;	joysticksend.c: 266: for (ii = 0; ii < 4; ++ii) {
-	incw	y
-	cpw	y, #0x0004
-	jrc	00106$
-;	joysticksend.c: 274: _tm1637Start();
-	call	__tm1637Start
-;	joysticksend.c: 275: _tm1637WriteByte(0x40);
-	push	#0x40
-	call	__tm1637WriteByte
-	pop	a
-;	joysticksend.c: 276: _tm1637ReadResult();
-	call	__tm1637ReadResult
-;	joysticksend.c: 277: _tm1637Stop();
-	call	__tm1637Stop
-;	joysticksend.c: 279: _tm1637Start();
-	call	__tm1637Start
-;	joysticksend.c: 280: _tm1637WriteByte(0xc0);
-	push	#0xc0
-	call	__tm1637WriteByte
-	pop	a
-;	joysticksend.c: 281: _tm1637ReadResult();
-	call	__tm1637ReadResult
-;	joysticksend.c: 283: for (ii = 0; ii < 4; ++ii) {
-	clrw	x
-	ldw	(0x07, sp), x
-00108$:
-;	joysticksend.c: 284: _tm1637WriteByte(digitArr[3 - ii]);
-	ld	a, (0x08, sp)
-	ld	(0x13, sp), a
-	ld	a, #0x03
-	sub	a, (0x13, sp)
-	clrw	x
-	ld	xl, a
-	addw	x, (0x0f, sp)
-	ld	a, (x)
-	push	a
-	call	__tm1637WriteByte
-	pop	a
-;	joysticksend.c: 285: _tm1637ReadResult();
-	call	__tm1637ReadResult
-;	joysticksend.c: 283: for (ii = 0; ii < 4; ++ii) {
-	ldw	x, (0x07, sp)
+;	joysticksend.c: 348: temp[1]=0x01;               
+	ldw	x, (0x0c, sp)
 	incw	x
-	ldw	(0x07, sp), x
-	ldw	x, (0x07, sp)
-	cpw	x, #0x0004
-	jrc	00108$
-;	joysticksend.c: 288: _tm1637Stop();
-	call	__tm1637Stop
-	addw	sp, #19
-	ret
-;	joysticksend.c: 293: void tm1637SetBrightness(char brightness)
-;	-----------------------------------------
-;	 function tm1637SetBrightness
-;	-----------------------------------------
-_tm1637SetBrightness:
-;	joysticksend.c: 300: _tm1637Start();
-	call	__tm1637Start
-;	joysticksend.c: 301: _tm1637WriteByte(0x87 + brightness);
-	ld	a, (0x03, sp)
-	add	a, #0x87
-	push	a
-	call	__tm1637WriteByte
-	pop	a
-;	joysticksend.c: 302: _tm1637ReadResult();
-	call	__tm1637ReadResult
-;	joysticksend.c: 303: _tm1637Stop();
-	jp	__tm1637Stop
-;	joysticksend.c: 306: void _tm1637Start(void)
-;	-----------------------------------------
-;	 function _tm1637Start
-;	-----------------------------------------
-__tm1637Start:
-;	joysticksend.c: 308: _tm1637ClkHigh();
-	call	__tm1637ClkHigh
-;	joysticksend.c: 309: _tm1637DioHigh();
-	call	__tm1637DioHigh
-;	joysticksend.c: 310: delay(5);
-	push	#0x05
-	push	#0x00
-	call	_delay
-	addw	sp, #2
-;	joysticksend.c: 311: _tm1637DioLow();
-	jp	__tm1637DioLow
-;	joysticksend.c: 314: void _tm1637Stop(void)
-;	-----------------------------------------
-;	 function _tm1637Stop
-;	-----------------------------------------
-__tm1637Stop:
-;	joysticksend.c: 316: _tm1637ClkLow();
-	call	__tm1637ClkLow
-;	joysticksend.c: 317: delay(5);
-	push	#0x05
-	push	#0x00
-	call	_delay
-	addw	sp, #2
-;	joysticksend.c: 318: _tm1637DioLow();
-	call	__tm1637DioLow
-;	joysticksend.c: 319: delay(5);
-	push	#0x05
-	push	#0x00
-	call	_delay
-	addw	sp, #2
-;	joysticksend.c: 320: _tm1637ClkHigh();
-	call	__tm1637ClkHigh
-;	joysticksend.c: 321: delay(5);
-	push	#0x05
-	push	#0x00
-	call	_delay
-	addw	sp, #2
-;	joysticksend.c: 322: _tm1637DioHigh();
-	jp	__tm1637DioHigh
-;	joysticksend.c: 325: void _tm1637ReadResult(void)
-;	-----------------------------------------
-;	 function _tm1637ReadResult
-;	-----------------------------------------
-__tm1637ReadResult:
-;	joysticksend.c: 327: _tm1637ClkLow();
-	call	__tm1637ClkLow
-;	joysticksend.c: 328: delay(5);
-	push	#0x05
-	push	#0x00
-	call	_delay
-	addw	sp, #2
-;	joysticksend.c: 330: _tm1637ClkHigh();
-	call	__tm1637ClkHigh
-;	joysticksend.c: 331: delay(5);
-	push	#0x05
-	push	#0x00
-	call	_delay
-	addw	sp, #2
-;	joysticksend.c: 332: _tm1637ClkLow();
-	jp	__tm1637ClkLow
-;	joysticksend.c: 335: void _tm1637WriteByte(unsigned char b)
-;	-----------------------------------------
-;	 function _tm1637WriteByte
-;	-----------------------------------------
-__tm1637WriteByte:
-	sub	sp, #2
-;	joysticksend.c: 337: for (ii = 0; ii < 8; ++ii) {
-	clrw	x
-	ldw	(0x01, sp), x
-00105$:
-;	joysticksend.c: 338: _tm1637ClkLow();
-	call	__tm1637ClkLow
-;	joysticksend.c: 339: if (b & 0x01) {
-	ld	a, (0x05, sp)
-	srl	a
-	jrnc	00102$
-;	joysticksend.c: 340: _tm1637DioHigh();
-	call	__tm1637DioHigh
+	ldw	(0x0a, sp), x
+	ldw	x, (0x0a, sp)
+	ld	a, #0x01
+	ld	(x), a
+;	joysticksend.c: 349: temp[2]=0x30;               
+	ldw	x, (0x0c, sp)
+	incw	x
+	incw	x
+	ldw	(0x08, sp), x
+	ldw	x, (0x08, sp)
+	ld	a, #0x30
+	ld	(x), a
+;	joysticksend.c: 351: { temp[3]=0xE2; }              
+	ldw	x, (0x0c, sp)
+	addw	x, #0x0003
+	ldw	(0x06, sp), x
+;	joysticksend.c: 350: if (SE8R01_DR_2M==1)
+	ldw	x, _SE8R01_DR_2M+0
+	cpw	x, #0x0001
+	jrne	00102$
+;	joysticksend.c: 351: { temp[3]=0xE2; }              
+	ldw	x, (0x06, sp)
+	ld	a, #0xe2
+	ld	(x), a
 	jra	00103$
 00102$:
-;	joysticksend.c: 343: _tm1637DioLow();
-	call	__tm1637DioLow
+;	joysticksend.c: 353: { temp[3]=0xE0;}
+	ldw	x, (0x06, sp)
+	ld	a, #0xe0
+	ld	(x), a
 00103$:
-;	joysticksend.c: 345: delay(15);
-	push	#0x0f
+;	joysticksend.c: 355: write_spi_buf(iRF_CMD_WRITE_REG|iRF_BANK1_PLL_CTL0, temp,4);
+	ldw	x, (0x0c, sp)
+	push	#0x04
+	pushw	x
+	push	#0x21
+	call	_write_spi_buf
+	addw	sp, #4
+;	joysticksend.c: 357: temp[0]=0x29;
+	ldw	x, (0x0c, sp)
+	ld	a, #0x29
+	ld	(x), a
+;	joysticksend.c: 358: temp[1]=0x89;
+	ldw	x, (0x0a, sp)
+	ld	a, #0x89
+	ld	(x), a
+;	joysticksend.c: 359: temp[2]=0x55;                     
+	ldw	x, (0x08, sp)
+	ld	a, #0x55
+	ld	(x), a
+;	joysticksend.c: 360: temp[3]=0x40;
+	ldw	x, (0x06, sp)
+	ld	a, #0x40
+	ld	(x), a
+;	joysticksend.c: 361: temp[4]=0x50;
+	ldw	x, (0x0c, sp)
+	ld	a, #0x50
+	ld	(0x0004, x), a
+;	joysticksend.c: 362: write_spi_buf(iRF_CMD_WRITE_REG|iRF_BANK1_CAL_CTL, temp,5);
+	ldw	x, (0x0c, sp)
+	push	#0x05
+	pushw	x
+	push	#0x23
+	call	_write_spi_buf
+	addw	sp, #4
+;	joysticksend.c: 364: if (SE8R01_DR_2M==1)
+	ldw	x, _SE8R01_DR_2M+0
+	cpw	x, #0x0001
+	jrne	00105$
+;	joysticksend.c: 365: { temp[0]=0x29;}
+	ldw	x, (0x0c, sp)
+	ld	a, #0x29
+	ld	(x), a
+	jra	00106$
+00105$:
+;	joysticksend.c: 367: { temp[0]=0x14;}
+	ldw	x, (0x0c, sp)
+	ld	a, #0x14
+	ld	(x), a
+00106$:
+;	joysticksend.c: 369: write_spi_buf(iRF_CMD_WRITE_REG|iRF_BANK1_FDEV, temp,1);
+	ldw	x, (0x0c, sp)
+	push	#0x01
+	pushw	x
+	push	#0x2c
+	call	_write_spi_buf
+	addw	sp, #4
+;	joysticksend.c: 371: temp[0]=0x55;
+	ldw	x, (0x0c, sp)
+	ld	a, #0x55
+	ld	(x), a
+;	joysticksend.c: 372: temp[1]=0xC2;
+	ldw	x, (0x0a, sp)
+	ld	a, #0xc2
+	ld	(x), a
+;	joysticksend.c: 373: temp[2]=0x09;
+	ldw	x, (0x08, sp)
+	ld	a, #0x09
+	ld	(x), a
+;	joysticksend.c: 374: temp[3]=0xAC;  
+	ldw	x, (0x06, sp)
+	ld	a, #0xac
+	ld	(x), a
+;	joysticksend.c: 375: write_spi_buf(iRF_CMD_WRITE_REG|iRF_BANK1_RX_CTRL,temp,4);
+	ldw	x, (0x0c, sp)
+	push	#0x04
+	pushw	x
+	push	#0x31
+	call	_write_spi_buf
+	addw	sp, #4
+;	joysticksend.c: 377: temp[0]=0x00;
+	ldw	x, (0x0c, sp)
+	clr	(x)
+;	joysticksend.c: 378: temp[1]=0x14;
+	ldw	x, (0x0a, sp)
+	ld	a, #0x14
+	ld	(x), a
+;	joysticksend.c: 379: temp[2]=0x08;   
+	ldw	x, (0x08, sp)
+	ld	a, #0x08
+	ld	(x), a
+;	joysticksend.c: 380: temp[3]=0x29;
+	ldw	x, (0x06, sp)
+	ld	a, #0x29
+	ld	(x), a
+;	joysticksend.c: 381: write_spi_buf(iRF_CMD_WRITE_REG|iRF_BANK1_FAGC_CTRL_1, temp,4);
+	ldw	x, (0x0c, sp)
+	push	#0x04
+	pushw	x
+	push	#0x33
+	call	_write_spi_buf
+	addw	sp, #4
+;	joysticksend.c: 383: temp[0]=0x02;
+	ldw	x, (0x0c, sp)
+	ld	a, #0x02
+	ld	(x), a
+;	joysticksend.c: 384: temp[1]=0xC1;
+	ldw	x, (0x0a, sp)
+	ld	a, #0xc1
+	ld	(x), a
+;	joysticksend.c: 385: temp[2]=0xCB;  
+	ldw	x, (0x08, sp)
+	ld	a, #0xcb
+	ld	(x), a
+;	joysticksend.c: 386: temp[3]=0x1C;
+	ldw	x, (0x06, sp)
+	ld	a, #0x1c
+	ld	(x), a
+;	joysticksend.c: 387: write_spi_buf(iRF_CMD_WRITE_REG|iRF_BANK1_AGC_GAIN, temp,4);
+	ldw	x, (0x0c, sp)
+	push	#0x04
+	pushw	x
+	push	#0x3d
+	call	_write_spi_buf
+	addw	sp, #4
+;	joysticksend.c: 389: temp[0]=0x97;
+	ldw	x, (0x0c, sp)
+	ld	a, #0x97
+	ld	(x), a
+;	joysticksend.c: 390: temp[1]=0x64;
+	ldw	x, (0x0a, sp)
+	ld	a, #0x64
+	ld	(x), a
+;	joysticksend.c: 391: temp[2]=0x00;
+	ldw	x, (0x08, sp)
+	clr	(x)
+;	joysticksend.c: 392: temp[3]=0x01;
+	ldw	x, (0x06, sp)
+	ld	a, #0x01
+	ld	(x), a
+;	joysticksend.c: 393: write_spi_buf(iRF_CMD_WRITE_REG|iRF_BANK1_RF_IVGEN, temp,4);
+	ldw	x, (0x0c, sp)
+	push	#0x04
+	pushw	x
+	push	#0x3e
+	call	_write_spi_buf
+	addw	sp, #4
+;	joysticksend.c: 395: gtemp[0]=0x2A;
+	ldw	x, (0x14, sp)
+	ld	a, #0x2a
+	ld	(x), a
+;	joysticksend.c: 396: gtemp[1]=0x04;
+	ldw	x, (0x12, sp)
+	ld	a, #0x04
+	ld	(x), a
+;	joysticksend.c: 397: gtemp[2]=0x00;
+	ldw	x, (0x10, sp)
+	clr	(x)
+;	joysticksend.c: 398: gtemp[3]=0x7D;
+	ldw	x, (0x0e, sp)
+	ld	a, #0x7d
+	ld	(x), a
+;	joysticksend.c: 399: write_spi_buf(iRF_CMD_WRITE_REG|iRF_BANK1_TEST_PKDET, gtemp, 4);
+	ldw	x, (0x14, sp)
+	push	#0x04
+	pushw	x
+	push	#0x3f
+	call	_write_spi_buf
+	addw	sp, #4
+;	joysticksend.c: 401: rf_switch_bank(iBANK0);
 	push	#0x00
-	call	_delay
-	addw	sp, #2
-;	joysticksend.c: 346: b >>= 1;
-	ld	a, (0x05, sp)
-	srl	a
-	ld	(0x05, sp), a
-;	joysticksend.c: 347: _tm1637ClkHigh();
-	call	__tm1637ClkHigh
-;	joysticksend.c: 348: delay(15);
-	push	#0x0f
-	push	#0x00
-	call	_delay
-	addw	sp, #2
-;	joysticksend.c: 337: for (ii = 0; ii < 8; ++ii) {
-	ldw	x, (0x01, sp)
-	incw	x
-	ldw	(0x01, sp), x
-	ldw	x, (0x01, sp)
-	cpw	x, #0x0008
-	jrslt	00105$
-	addw	sp, #2
-	ret
-;	joysticksend.c: 354: void _tm1637ClkHigh(void)
-;	-----------------------------------------
-;	 function _tm1637ClkHigh
-;	-----------------------------------------
-__tm1637ClkHigh:
-;	joysticksend.c: 359: PD_ODR |= 1 << 2;
-	ldw	x, #0x500f
-	ld	a, (x)
-	or	a, #0x04
-	ld	(x), a
-	ret
-;	joysticksend.c: 362: void _tm1637ClkLow(void)
-;	-----------------------------------------
-;	 function _tm1637ClkLow
-;	-----------------------------------------
-__tm1637ClkLow:
-;	joysticksend.c: 366: PD_ODR &= ~(1 << 2);
-	ldw	x, #0x500f
-	ld	a, (x)
-	and	a, #0xfb
-	ld	(x), a
-	ret
-;	joysticksend.c: 372: void _tm1637DioHigh(void)
-;	-----------------------------------------
-;	 function _tm1637DioHigh
-;	-----------------------------------------
-__tm1637DioHigh:
-;	joysticksend.c: 376: PD_ODR |= 1 << 3;
-	ldw	x, #0x500f
-	ld	a, (x)
-	or	a, #0x08
-	ld	(x), a
-	ret
-;	joysticksend.c: 380: void _tm1637DioLow(void)
-;	-----------------------------------------
-;	 function _tm1637DioLow
-;	-----------------------------------------
-__tm1637DioLow:
-;	joysticksend.c: 382: PD_ODR &= ~(1 << 3);
-	ldw	x, #0x500f
-	ld	a, (x)
-	and	a, #0xf7
-	ld	(x), a
-	ret
-;	joysticksend.c: 391: unsigned int clock(void)
-;	-----------------------------------------
-;	 function clock
-;	-----------------------------------------
-_clock:
-	sub	sp, #3
-;	joysticksend.c: 393: unsigned char h = TIM1_CNTRH; //origineel PCNTRH
-	ldw	x, #0x525e
-	ld	a, (x)
-;	joysticksend.c: 394: unsigned char l = TIM1_CNTRL;
-	ldw	x, #0x525f
-	push	a
-	ld	a, (x)
-	ld	(0x02, sp), a
+	call	_rf_switch_bank
 	pop	a
-;	joysticksend.c: 395: return((unsigned int)(h) << 8 | l);
-	clrw	x
-	ld	xl, a
-	sllw	x
-	sllw	x
-	sllw	x
-	sllw	x
-	sllw	x
-	sllw	x
-	sllw	x
-	sllw	x
-	ld	a, (0x01, sp)
-	ld	(0x03, sp), a
-	clr	(0x02, sp)
-	ld	a, xl
-	or	a, (0x03, sp)
-	ld	xl, a
-	ld	a, xh
-	or	a, (0x02, sp)
-	ld	xh, a
-	addw	sp, #3
+	addw	sp, #21
 	ret
-;	joysticksend.c: 439: void timer_isr(void) __interrupt(TIM4_ISR) {
+;	joysticksend.c: 404: void SE8R01_Init()  
 ;	-----------------------------------------
-;	 function timer_isr
+;	 function SE8R01_Init
 ;	-----------------------------------------
-_timer_isr:
-;	joysticksend.c: 440: if (++internteller > 520) {
-	ldw	x, _internteller+0
+_SE8R01_Init:
+	sub	sp, #5
+;	joysticksend.c: 407: SE8R01_Calibration();   
+	call	_SE8R01_Calibration
+;	joysticksend.c: 408: SE8R01_Analog_Init();   
+	call	_SE8R01_Analog_Init
+;	joysticksend.c: 412: if (SE8R01_DR_2M==1)
+	ldw	x, _SE8R01_DR_2M+0
+	cpw	x, #0x0001
+	jrne	00105$
+;	joysticksend.c: 413: {  temp[0]=0b01001111; }     //2MHz,+5dbm
+	ldw	x, sp
 	incw	x
-	ldw	_internteller+0, x
-	cpw	x, #0x0208
-	jrule	00102$
-;	joysticksend.c: 441: internteller=0;
-	clr	_internteller+1
-	clr	_internteller+0
-;	joysticksend.c: 442: ++seconden;
-	ldw	x, _seconden+0
-	incw	x
-	ldw	_seconden+0, x
-00102$:
-;	joysticksend.c: 446: if (seconden > 59){
-	ldw	x, _seconden+0
-	cpw	x, #0x003b
-	jrule	00104$
-;	joysticksend.c: 447: seconden=0;
-	clr	_seconden+1
-	clr	_seconden+0
-;	joysticksend.c: 448: ++minuten;
-	ldw	x, _minuten+0
-	incw	x
-	ldw	_minuten+0, x
-00104$:
-;	joysticksend.c: 451: TIM4_SR &= ~(TIMx_UIF); //update interrupt
-	ldw	x, #0x5344
-	ld	a, (x)
-	and	a, #0xfe
+	ld	a, #0x4f
 	ld	(x), a
-	iret
-;	joysticksend.c: 458: int main () {
+	jra	00106$
+00105$:
+;	joysticksend.c: 414: else if  (SE8R01_DR_1M==1)
+	ldw	x, _SE8R01_DR_1M+0
+	cpw	x, #0x0001
+	jrne	00102$
+;	joysticksend.c: 415: {  temp[0]=0b01000111;  }     //1MHz,+5dbm
+	ldw	x, sp
+	incw	x
+	ld	a, #0x47
+	ld	(x), a
+	jra	00106$
+00102$:
+;	joysticksend.c: 417: {temp[0]=0b01101111;  }     //500K,+5dbm
+	ldw	x, sp
+	incw	x
+	ld	a, #0x6f
+	ld	(x), a
+00106$:
+;	joysticksend.c: 419: write_spi_buf(iRF_CMD_WRITE_REG|iRF_BANK0_RF_SETUP,temp,1);
+	ldw	x, sp
+	incw	x
+	push	#0x01
+	pushw	x
+	push	#0x26
+	call	_write_spi_buf
+	addw	sp, #4
+;	joysticksend.c: 421: write_spi_reg(WRITE_REG|iRF_BANK0_EN_AA, 0x01);          //enable auto acc on pip 1
+	push	#0x01
+	push	#0x21
+	call	_write_spi_reg
+	addw	sp, #2
+;	joysticksend.c: 422: write_spi_reg(WRITE_REG|iRF_BANK0_EN_RXADDR, 0x01);      //enable pip 1
+	push	#0x01
+	push	#0x22
+	call	_write_spi_reg
+	addw	sp, #2
+;	joysticksend.c: 423: write_spi_reg(WRITE_REG|iRF_BANK0_SETUP_AW, 0x02);        //4 byte adress
+	push	#0x02
+	push	#0x23
+	call	_write_spi_reg
+	addw	sp, #2
+;	joysticksend.c: 424: write_spi_reg(WRITE_REG|iRF_BANK0_SETUP_RETR, 0x08);        //lowest 4 bits 0-15 rt transmisston higest 4 bits 256-4096us Auto Retransmit Delay
+	push	#0x08
+	push	#0x24
+	call	_write_spi_reg
+	addw	sp, #2
+;	joysticksend.c: 425: write_spi_reg(WRITE_REG|iRF_BANK0_RF_CH, 40);
+	push	#0x28
+	push	#0x25
+	call	_write_spi_reg
+	addw	sp, #2
+;	joysticksend.c: 426: write_spi_reg(WRITE_REG|iRF_BANK0_DYNPD, 0x01);          //pipe0 pipe1 enable dynamic payload length data
+	push	#0x01
+	push	#0x3c
+	call	_write_spi_reg
+	addw	sp, #2
+;	joysticksend.c: 427: write_spi_reg(WRITE_REG|iRF_BANK0_FEATURE, 0x07);        // enable dynamic paload lenght; enbale payload with ack enable w_tx_payload_noack
+	push	#0x07
+	push	#0x3d
+	call	_write_spi_reg
+	addw	sp, #2
+;	joysticksend.c: 428: write_spi_reg(WRITE_REG + CONFIG, 0x3E);
+	push	#0x3e
+	push	#0x20
+	call	_write_spi_reg
+	addw	sp, #2
+;	joysticksend.c: 429: write_spi_buf(WRITE_REG + TX_ADDR, TX_ADDRESS, ADR_WIDTH);  //from tx
+	ldw	x, #_TX_ADDRESS+0
+	ldw	y, x
+	pushw	x
+	push	#0x04
+	pushw	y
+	push	#0x30
+	call	_write_spi_buf
+	addw	sp, #4
+	popw	x
+;	joysticksend.c: 431: write_spi_buf(WRITE_REG + RX_ADDR_P0, TX_ADDRESS, ADR_WIDTH); // Use the same address on the RX device as the TX device write_spi_reg(WRITE_REG + RX_PW_P0, TX_PLOAD_WIDTH); // Select same RX payload width as TX Payload width
+	push	#0x04
+	pushw	x
+	push	#0x2a
+	call	_write_spi_buf
+	addw	sp, #4
+;	joysticksend.c: 434: PC_ODR |= (1 << CE);
+	ldw	x, #0x500a
+	ld	a, (x)
+	or	a, #0x10
+	ld	(x), a
+	addw	sp, #5
+	ret
+;	joysticksend.c: 440: int main () {
 ;	-----------------------------------------
 ;	 function main
 ;	-----------------------------------------
 _main:
-	sub	sp, #6
-;	joysticksend.c: 463: unsigned int val=0;
+	sub	sp, #59
+;	joysticksend.c: 447: UCHAR rx_addr_p1[]  = { 0xd2, 0xf0, 0xf0, 0xf0, 0xf0 };
+	ldw	y, sp
+	addw	y, #45
+	ld	a, #0xd2
+	ld	(y), a
+	ldw	x, y
+	incw	x
+	ld	a, #0xf0
+	ld	(x), a
+	ldw	x, y
+	incw	x
+	incw	x
+	ld	a, #0xf0
+	ld	(x), a
+	ldw	x, y
+	ld	a, #0xf0
+	ld	(0x0003, x), a
+	ldw	x, y
+	ld	a, #0xf0
+	ld	(0x0004, x), a
+;	joysticksend.c: 448: UCHAR tx_addr[]     = { 0xe1, 0xf0, 0xf0, 0xf0, 0xf0 };
+	ldw	y, sp
+	addw	y, #40
+	ld	a, #0xe1
+	ld	(y), a
+	ldw	x, y
+	incw	x
+	ld	a, #0xf0
+	ld	(x), a
+	ldw	x, y
+	incw	x
+	incw	x
+	ld	a, #0xf0
+	ld	(x), a
+	ldw	x, y
+	ld	a, #0xf0
+	ld	(0x0003, x), a
+	ldw	x, y
+	addw	x, #0x0004
+	ld	a, #0xf0
+	ld	(x), a
+;	joysticksend.c: 451: InitializeSystemClock();
+	call	_InitializeSystemClock
+;	joysticksend.c: 454: InitializeSPI ();
+	call	_InitializeSPI
+;	joysticksend.c: 457: memset (tx_payload, 0, sizeof(tx_payload));
+	ldw	x, sp
+	addw	x, #7
+	ldw	(0x3a, sp), x
+	ldw	y, (0x3a, sp)
+	push	#0x21
+	push	#0x00
+	clrw	x
+	pushw	x
+	pushw	y
+	call	_memset
+	addw	sp, #6
+;	joysticksend.c: 460: init_io();                        // Initialize IO port
+	call	_init_io
+;	joysticksend.c: 461: write_spi_reg(FLUSH_TX,0); // transmit -- send data 
+	push	#0x00
+	push	#0xe1
+	call	_write_spi_reg
+	addw	sp, #2
+;	joysticksend.c: 462: readstatus = read_spi_reg(CONFIG);
+	push	#0x00
+	call	_read_spi_reg
+	pop	a
+;	joysticksend.c: 463: readstatus = read_spi_reg(STATUS);
+	push	#0x07
+	call	_read_spi_reg
+	pop	a
+;	joysticksend.c: 465: SE8R01_Init();
+	call	_SE8R01_Init
+;	joysticksend.c: 469: while (1) {
+00110$:
+;	joysticksend.c: 471: gemiddeld=0;
+	clrw	x
+	ldw	(0x01, sp), x
+;	joysticksend.c: 472: ampere=0;
+	clrw	x
+	ldw	(0x38, sp), x
+;	joysticksend.c: 473: for(samples=0;samples<100000;samples++)
 	clrw	x
 	ldw	(0x05, sp), x
-;	joysticksend.c: 465: InitializeSystemClock();
-	call	_InitializeSystemClock
-;	joysticksend.c: 467: PD_DDR = (1 << 3) | (1 << 2); // output mode
-	ldw	x, #0x5011
-	ld	a, #0x0c
-	ld	(x), a
-;	joysticksend.c: 468: PD_CR1 = (1 << 3) | (1 << 2); // push-pull
-	ldw	x, #0x5012
-	ld	a, #0x0c
-	ld	(x), a
-;	joysticksend.c: 469: PD_CR2 = (1 << 3) | (1 << 2); // up to 10MHz speed
-	ldw	x, #0x5013
-	ld	a, #0x0c
-	ld	(x), a
-;	joysticksend.c: 473: TIM1_PSCRH = 0x3e;
-	ldw	x, #0x5260
-	ld	a, #0x3e
-	ld	(x), a
-;	joysticksend.c: 474: TIM1_PSCRL = 0x80;
-	ldw	x, #0x5261
-	ld	a, #0x80
-	ld	(x), a
-;	joysticksend.c: 476: tm1637Init();
-	call	_tm1637Init
-;	joysticksend.c: 478: InitializeUART();
-	call	_InitializeUART
-;	joysticksend.c: 481: __asm__("rim");
-	rim
-;	joysticksend.c: 484: TIM4_PSCR = 0b00000111;
-	ldw	x, #0x5347
-	ld	a, #0x07
-	ld	(x), a
-;	joysticksend.c: 486: TIM4_ARR = 239;
-	ldw	x, #0x5348
-	ld	a, #0xef
-	ld	(x), a
-;	joysticksend.c: 488: TIM4_IER |= TIMx_UIE;// Enable Update Interrupt
-	bset	0x5343, #0
-;	joysticksend.c: 490: TIM4_CR1 |= TIMx_CEN; // Enable TIM4
-	bset	0x5340, #0
-;	joysticksend.c: 495: while (1) {
-00109$:
-;	joysticksend.c: 500: ADC_CR1 |= ADC_ADON; // ADC ON
-	bset	0x5401, #0
-;	joysticksend.c: 501: ADC_CSR |= ((0x0F)&2); // select channel = 2 = PC4
+	ldw	(0x03, sp), x
+00112$:
+;	joysticksend.c: 476: ADC_CSR |= ((0x0F)&4); // select channel = 4 = PD3
 	ldw	x, #0x5400
 	ld	a, (x)
-	or	a, #0x02
+	or	a, #0x04
 	ld	(x), a
-;	joysticksend.c: 502: ADC_CR2 |= ADC_ALIGN; // Right Aligned Data
+;	joysticksend.c: 477: ADC_CR2 |= ADC_ALIGN; // Right Aligned Data
 	ldw	x, #0x5402
 	ld	a, (x)
 	or	a, #0x08
 	ld	(x), a
-;	joysticksend.c: 503: ADC_CR1 |= ADC_ADON; // start conversion 
+;	joysticksend.c: 478: ADC_CR1 |= ADC_ADON; // ADC ON
 	bset	0x5401, #0
-;	joysticksend.c: 504: while(((ADC_CSR)&(1<<7))== 0); // Wait till EOC
+;	joysticksend.c: 479: ADC_CR1 |= ADC_ADON; // start conversion 
+	bset	0x5401, #0
+;	joysticksend.c: 480: while(((ADC_CSR)&(1<<7))== 0); // Wait till EOC
 00101$:
 	ldw	x, #0x5400
 	ld	a, (x)
 	sll	a
 	jrnc	00101$
-;	joysticksend.c: 506: val |= (unsigned int)ADC_DRL;
+;	joysticksend.c: 482: ampere |= (unsigned int)ADC_DRL;
 	ldw	x, #0x5405
 	ld	a, (x)
-	clrw	x
-	ld	xl, a
-	or	a, (0x06, sp)
-	ld	(0x04, sp), a
+	rlwa	x
+	clr	a
+	rrwa	x
+	ldw	y, (0x38, sp)
+	ldw	(0x36, sp), y
+	or	a, (0x37, sp)
+	ld	yl, a
 	ld	a, xh
-	or	a, (0x05, sp)
-	ld	(0x01, sp), a
-	ld	a, (0x04, sp)
-	ld	(0x02, sp), a
-;	joysticksend.c: 508: val |= (unsigned int)ADC_DRH<<8;
+	or	a, (0x36, sp)
+	ld	yh, a
+;	joysticksend.c: 483: ampere |= (unsigned int)ADC_DRH<<8;
 	ldw	x, #0x5404
 	ld	a, (x)
 	clrw	x
@@ -1194,81 +1435,212 @@ _main:
 	sllw	x
 	sllw	x
 	sllw	x
+	ldw	(0x34, sp), y
 	ld	a, xl
-	or	a, (0x02, sp)
+	or	a, (0x35, sp)
 	ld	yl, a
 	ld	a, xh
-	or	a, (0x01, sp)
+	or	a, (0x34, sp)
 	ld	yh, a
-;	joysticksend.c: 509: ADC_CR1 &= ~(1<<0); // ADC Stop Conversion
+;	joysticksend.c: 485: ADC_CR1 &= ~(1<<0); // ADC Stop Conversion
 	ldw	x, #0x5401
 	ld	a, (x)
 	and	a, #0xfe
 	ld	(x), a
-;	joysticksend.c: 510: readValue = val & 0x03ff;
+;	joysticksend.c: 486: ampere &= 0x03ff; // 0 bits resolution so above 0x0400 is nothing
 	ld	a, yh
 	and	a, #0x03
 	ld	yh, a
-;	joysticksend.c: 511: if (readValue > minValue)
-	cpw	y, #0x000a
-	jrsle	00105$
-;	joysticksend.c: 513: TIM1_CR1 = 0x01; // enable timer
-	ldw	x, #0x5250
-	ld	a, #0x01
-	ld	(x), a
-00105$:
-;	joysticksend.c: 515: if (readValue < minValue)
-	cpw	y, #0x000a
-	jrsge	00107$
-;	joysticksend.c: 517: TIM1_CR1 = 0x00; // disable timer
-	ldw	x, #0x5250
-	clr	(x)
-;	joysticksend.c: 518: tijd=clock();
-	call	_clock
-;	joysticksend.c: 519: print_UCHAR_hex(tijd);
-	ld	a, xl
-	push	a
-	call	_print_UCHAR_hex
-	pop	a
-00107$:
-;	joysticksend.c: 523: tm1637DisplayDecimal(minuten, 0); // tijd in seconden 
-	ldw	y, _minuten+0
-	clrw	x
-	push	#0x00
-	push	#0x00
-	pushw	y
-	pushw	x
-	call	_tm1637DisplayDecimal
-	addw	sp, #6
-;	joysticksend.c: 524: val=0;
-	clrw	x
+	ldw	(0x38, sp), y
+;	joysticksend.c: 487: if (ampere > gemiddeld) gemiddeld=ampere;
+	ldw	x, (0x38, sp)
+	cpw	x, (0x01, sp)
+	jrsle	00113$
+	ldw	y, (0x38, sp)
+	ldw	(0x01, sp), y
+00113$:
+;	joysticksend.c: 473: for(samples=0;samples<100000;samples++)
+	ldw	x, (0x05, sp)
+	addw	x, #0x0001
 	ldw	(0x05, sp), x
-;	joysticksend.c: 525: delay(1);
-	push	#0x01
+	ld	a, (0x04, sp)
+	adc	a, #0x00
+	ld	(0x04, sp), a
+	ld	a, (0x03, sp)
+	adc	a, #0x00
+	ld	(0x03, sp), a
+	ldw	x, (0x05, sp)
+	cpw	x, #0x86a0
+	ld	a, (0x04, sp)
+	sbc	a, #0x01
+	ld	a, (0x03, sp)
+	sbc	a, #0x00
+	jrsge	00147$
+	jp	00112$
+00147$:
+;	joysticksend.c: 490: if (gemiddeld < 0x001f) gemiddeld=0; //remove unwanted mini measurements
+	ldw	x, (0x01, sp)
+	cpw	x, #0x001f
+	jrsge	00108$
+	clrw	x
+	ldw	(0x01, sp), x
+00108$:
+;	joysticksend.c: 491: tx_payload[0] = 0xac; //first two is unique ID for this current sensor
+	ldw	x, (0x3a, sp)
+	ld	a, #0xac
+	ld	(x), a
+;	joysticksend.c: 492: tx_payload[1] = 0xcc;
+	ldw	x, (0x3a, sp)
+	incw	x
+	ld	a, #0xcc
+	ld	(x), a
+;	joysticksend.c: 493: tx_payload[2] = gemiddeld>>8;
+	ldw	y, (0x3a, sp)
+	addw	y, #0x0002
+	ldw	x, (0x01, sp)
+	sraw	x
+	sraw	x
+	sraw	x
+	sraw	x
+	sraw	x
+	sraw	x
+	sraw	x
+	sraw	x
+	ld	a, xl
+	ld	(y), a
+;	joysticksend.c: 494: tx_payload[3] = gemiddeld & 0x00ff; 
+	ldw	x, (0x3a, sp)
+	addw	x, #0x0003
+	ld	a, (0x02, sp)
+	push	a
+	clr	(0x33, sp)
+	pop	a
+	ld	(x), a
+;	joysticksend.c: 495: write_spi_buf(iRF_CMD_WR_TX_PLOAD, tx_payload, 4);
+	ldw	x, (0x3a, sp)
+	push	#0x04
+	pushw	x
+	push	#0xa0
+	call	_write_spi_buf
+	addw	sp, #4
+;	joysticksend.c: 496: write_spi_reg(WRITE_REG+STATUS, 0xff);
+	push	#0xff
+	push	#0x27
+	call	_write_spi_reg
+	addw	sp, #2
+;	joysticksend.c: 503: delay(4);
+	push	#0x04
 	push	#0x00
 	call	_delay
 	addw	sp, #2
-	jp	00109$
-	addw	sp, #6
+	jp	00110$
+	addw	sp, #59
 	ret
 	.area CODE
-_segmentMap:
-	.db #0x3F	;  63
-	.db #0x06	;  6
-	.db #0x5B	;  91
-	.db #0x4F	;  79	'O'
-	.db #0x66	;  102	'f'
-	.db #0x6D	;  109	'm'
-	.db #0x7D	;  125
-	.db #0x07	;  7
-	.db #0x7F	;  127
-	.db #0x6F	;  111	'o'
-	.db #0x77	;  119	'w'
-	.db #0x7C	;  124
-	.db #0x39	;  57	'9'
-	.db #0x5E	;  94
-	.db #0x79	;  121	'y'
-	.db #0x71	;  113	'q'
-	.db #0x00	;  0
 	.area INITIALIZER
+__xinit__SE8R01_DR_2M:
+	.dw #0x0000
+__xinit__SE8R01_DR_1M:
+	.dw #0x0000
+__xinit__SE8R01_DR_500K:
+	.dw #0x0001
+__xinit__pload_width_now:
+	.dw #0x0000
+__xinit__newdata:
+	.dw #0x0000
+__xinit__signal_lv:
+	.db #0x00	;  0
+__xinit__pip:
+	.dw #0x0000
+__xinit__status:
+	.db #0x00	; 0
+__xinit__TX_ADDRESS:
+	.db #0xB3	; 179
+	.db #0x43	; 67	'C'
+	.db #0x10	; 16
+	.db #0x10	; 16
+__xinit__ADDRESS2:
+	.db #0xB1	; 177
+__xinit__ADDRESS3:
+	.db #0xB2	; 178
+__xinit__ADDRESS4:
+	.db #0xB3	; 179
+__xinit__ADDRESS5:
+	.db #0xB4	; 180
+__xinit__ADDRESS1:
+	.db #0xB0	; 176
+	.db #0x43	; 67	'C'
+	.db #0x10	; 16
+	.db #0x10	; 16
+__xinit__ADDRESS0:
+	.db #0x34	; 52	'4'
+	.db #0x43	; 67	'C'
+	.db #0x10	; 16
+	.db #0x10	; 16
+__xinit__rx_buf:
+	.db #0x00	; 0
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+__xinit__tx_buf:
+	.db #0x00	; 0
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
+	.db 0x00
 	.area CABS (ABS)

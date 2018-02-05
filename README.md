@@ -2,6 +2,9 @@ remote control car
 
 this part reads out an analog joystick and sends the result
 
+I use a self developped board : look at stm8.pdf for pinout
+
+To read out joystick : AIN5 and AIN6 will be used (serial port becomes unusable) (PD5 & PD6)
 
 
 It would like to thank tiger762 : https://github.com/tiger762/STM8S103
