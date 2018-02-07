@@ -433,8 +433,8 @@ void SE8R01_Init()
 
 
 int main () {
-	int ampere;
-
+	int xaxis, yaxis;
+        UCHAR joyswitch;
 
 
 	UCHAR rx_addr_p1[]  = { 0xd2, 0xf0, 0xf0, 0xf0, 0xf0 };
@@ -442,7 +442,18 @@ int main () {
 	UCHAR tx_payload[33];
 	UCHAR readstatus;
 	InitializeSystemClock();
+	// read input switch of joystick 
+	// connect J4 PD4 (right side)
+	
+PD_DDR &= ~(1<<4);
+	PD_CR1 |= (1<<4);
 	// InitializeUART(); uart port is used for analog input
+	//
+	//
+	// connect J4 PD5 and PD6 (left side)
+	//
+	//
+	//
 	//   InitializeI2C();
 	InitializeSPI ();
 
@@ -460,9 +471,12 @@ int main () {
 
 
 	while (1) {
-		//read analog value on port PD5  -- AIN5 
+		//read analog value on port PD5  -- AIN5 xaxis 
+		//read analog value on port PD6  -- AIN6 yaxis
 		gemiddeld=0;
-		ampere=0;
+		xaxis=0;
+		yaxis=0;
+	        joyswitch = PD_IDR & (1<<4);
 
 		ADC_CSR |= ((0x0F)&5); // select channel = 5 = PD5
 		ADC_CR2 |= ADC_ALIGN; // Right Aligned Data
@@ -470,18 +484,35 @@ int main () {
 		ADC_CR1 |= ADC_ADON; // start conversion 
 		while(((ADC_CSR)&(1<<7))== 0); // Wait till EOC
 
-		ampere |= (unsigned int)ADC_DRL;
-		ampere |= (unsigned int)ADC_DRH<<8;
+		xaxis |= (unsigned int)ADC_DRL;
+		xaxis |= (unsigned int)ADC_DRH<<8;
 
 		ADC_CR1 &= ~(1<<0); // ADC Stop Conversion
-		ampere &= 0x03ff; // 0 bits resolution so above 0x0400 is nothing
+		xaxis &= 0x03ff; // 0 bits resolution so above 0x0400 is nothing
+
+		ADC_CSR |= ((0x0F)&6); // select channel = 6 = PD6
+		ADC_CR2 |= ADC_ALIGN; // Right Aligned Data
+		ADC_CR1 |= ADC_ADON; // ADC ON
+		ADC_CR1 |= ADC_ADON; // start conversion 
+		while(((ADC_CSR)&(1<<7))== 0); // Wait till EOC
+
+		yaxis |= (unsigned int)ADC_DRL;
+		yaxis |= (unsigned int)ADC_DRH<<8;
+
+		ADC_CR1 &= ~(1<<0); // ADC Stop Conversion
+		yaxis &= 0x03ff; // 0 bits resolution so above 0x0400 is nothing
+
+
 
 
 		tx_payload[0] = 0xac; //first two is unique ID for this emitter 
 		tx_payload[1] = 0xcc;
-		tx_payload[2] = ampere>>8;
-		tx_payload[3] = ampere & 0x00ff; 
-		write_spi_buf(iRF_CMD_WR_TX_PLOAD, tx_payload, 4);
+		tx_payload[2] = xaxis>>8;
+		tx_payload[3] = xaxis & 0x00ff; 
+		tx_payload[4] = yaxis>>8;
+		tx_payload[5] = yaxis & 0x00ff; 
+		tx_payload[6] = joyswitch; 
+		write_spi_buf(iRF_CMD_WR_TX_PLOAD, tx_payload, 7);
 		write_spi_reg(WRITE_REG+STATUS, 0xff);
 		// readstatus = read_spi_reg(STATUS);
 		//  UARTPrintF("status = \n\r");
