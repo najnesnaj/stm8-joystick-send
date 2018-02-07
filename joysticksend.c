@@ -434,7 +434,7 @@ void SE8R01_Init()
 
 int main () {
 	int xaxis, yaxis;
-        UCHAR joyswitch;
+	UCHAR joyswitch;
 
 
 	UCHAR rx_addr_p1[]  = { 0xd2, 0xf0, 0xf0, 0xf0, 0xf0 };
@@ -444,8 +444,19 @@ int main () {
 	InitializeSystemClock();
 	// read input switch of joystick 
 	// connect J4 PD4 (right side)
-	
-PD_DDR &= ~(1<<4);
+
+//blink led on PD2
+//
+//
+PD_DDR |= (1 << 2) ; // output mode
+   PD_CR1 |= (1 << 2) ; // push-pull
+       
+           PD_ODR &= ~(1 << 2);
+
+
+
+
+	PD_DDR &= ~(1<<4);
 	PD_CR1 |= (1<<4);
 	// InitializeUART(); uart port is used for analog input
 	//
@@ -471,12 +482,14 @@ PD_DDR &= ~(1<<4);
 
 
 	while (1) {
+                //PD_ODR &= ~(1 << 2); switch led on port PD2 on
 		//read analog value on port PD5  -- AIN5 xaxis 
 		//read analog value on port PD6  -- AIN6 yaxis
-		gemiddeld=0;
 		xaxis=0;
 		yaxis=0;
-	        joyswitch = PD_IDR & (1<<4);
+		joyswitch = PD_IDR & (1<<4);
+
+		if (joyswitch == 1) PD_ODR &= ~(1 << 2); //switch led on port PD2 on
 
 		ADC_CSR |= ((0x0F)&5); // select channel = 5 = PD5
 		ADC_CR2 |= ADC_ALIGN; // Right Aligned Data
@@ -521,6 +534,7 @@ PD_DDR &= ~(1<<4);
 		//	print_UCHAR_hex(readstatus);
 		// Delay before looping back
 		delay(4);
+                PD_ODR &= ~(1 << 2); //switch led on pd2 off
 
 	}
 }
