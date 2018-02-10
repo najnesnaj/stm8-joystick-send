@@ -1,7 +1,7 @@
 ;--------------------------------------------------------
 ; File Created by SDCC : free open source ANSI-C Compiler
 ; Version 3.4.0 #8981 (Jul 11 2014) (Linux)
-; This file was generated Thu Feb  8 11:44:52 2018
+; This file was generated Sat Feb 10 12:11:19 2018
 ;--------------------------------------------------------
 	.module joysticksend
 	.optsdcc -mstm8
@@ -1483,7 +1483,7 @@ _SE8R01_Init:
 ;	 function main
 ;	-----------------------------------------
 _main:
-	sub	sp, #46
+	sub	sp, #66
 ;	joysticksend.c: 515: UCHAR rx_addr_p1[]  = { 0xd2, 0xf0, 0xf0, 0xf0, 0xf0 };
 	ldw	y, sp
 	addw	y, #40
@@ -1532,7 +1532,7 @@ _main:
 	ld	a, (x)
 	or	a, #0x04
 	ld	(x), a
-;	joysticksend.c: 527: PD_CR1 |= (1 << 2) ; // push-pull
+;	joysticksend.c: 527: PD_CR1 |= (1 << 2) ; // pull
 	ldw	x, #0x5012
 	ld	a, (x)
 	or	a, #0x04
@@ -1547,21 +1547,19 @@ _main:
 	ld	a, (x)
 	and	a, #0xef
 	ld	(x), a
-;	joysticksend.c: 535: PD_CR1 |= (1<<4);
+;	joysticksend.c: 535: PD_CR1 |= (1<<4); 
 	ldw	x, #0x5012
 	ld	a, (x)
 	or	a, #0x10
 	ld	(x), a
-;	joysticksend.c: 536: InitializeUART(); //uart port is used for analog input
-	call	_InitializeUART
 ;	joysticksend.c: 544: InitializeSPI ();
 	call	_InitializeSPI
 ;	joysticksend.c: 547: memset (tx_payload, 0, sizeof(tx_payload));
 	ldw	x, sp
 	incw	x
 	incw	x
-	ldw	(0x2d, sp), x
-	ldw	y, (0x2d, sp)
+	ldw	(0x39, sp), x
+	ldw	y, (0x39, sp)
 	push	#0x21
 	push	#0x00
 	clrw	x
@@ -1587,53 +1585,214 @@ _main:
 ;	joysticksend.c: 555: SE8R01_Init();
 	call	_SE8R01_Init
 ;	joysticksend.c: 559: while (1) {
-00104$:
+00110$:
+;	joysticksend.c: 563: xaxis=0;
+	clrw	x
+	ldw	(0x3f, sp), x
+;	joysticksend.c: 564: yaxis=0;
+	clrw	x
+	ldw	(0x3d, sp), x
 ;	joysticksend.c: 565: joyswitch = PD_IDR & (1<<4);
 	ldw	x, #0x5010
 	ld	a, (x)
 	and	a, #0x10
 	ld	(0x01, sp), a
-;	joysticksend.c: 567: if (joyswitch == 1) PD_ODR &= ~(1 << 2); //switch led on port PD2 on
+;	joysticksend.c: 567: if (joyswitch == 1) PD_ODR |= (1 << 2); //switch led on port PD2 on
 	ld	a, (0x01, sp)
 	cp	a, #0x01
 	jrne	00102$
 	ldw	x, #0x500f
 	ld	a, (x)
-	and	a, #0xfb
+	or	a, #0x04
 	ld	(x), a
 00102$:
+;	joysticksend.c: 569: ADC_CSR |= ((0x0F)&5); // select channel = 5 = PD5
+	ldw	x, #0x5400
+	ld	a, (x)
+	or	a, #0x05
+	ld	(x), a
+;	joysticksend.c: 570: ADC_CR2 |= ADC_ALIGN; // Right Aligned Data
+	ldw	x, #0x5402
+	ld	a, (x)
+	or	a, #0x08
+	ld	(x), a
+;	joysticksend.c: 571: ADC_CR1 |= ADC_ADON; // ADC ON
+	bset	0x5401, #0
+;	joysticksend.c: 572: ADC_CR1 |= ADC_ADON; // start conversion 
+	bset	0x5401, #0
+;	joysticksend.c: 573: while(((ADC_CSR)&(1<<7))== 0); // Wait till EOC
+00103$:
+	ldw	x, #0x5400
+	ld	a, (x)
+	sll	a
+	jrnc	00103$
+;	joysticksend.c: 575: xaxis |= (unsigned int)ADC_DRL;
+	ldw	x, #0x5405
+	ld	a, (x)
+	rlwa	x
+	clr	a
+	rrwa	x
+	ldw	y, (0x3f, sp)
+	ldw	(0x3b, sp), y
+	or	a, (0x3c, sp)
+	ld	yl, a
+	ld	a, xh
+	or	a, (0x3b, sp)
+	ld	yh, a
+;	joysticksend.c: 576: xaxis |= (unsigned int)ADC_DRH<<8;
+	ldw	x, #0x5404
+	ld	a, (x)
+	clrw	x
+	ld	xl, a
+	sllw	x
+	sllw	x
+	sllw	x
+	sllw	x
+	sllw	x
+	sllw	x
+	sllw	x
+	sllw	x
+	ldw	(0x37, sp), y
+	ld	a, xl
+	or	a, (0x38, sp)
+	ld	yl, a
+	ld	a, xh
+	or	a, (0x37, sp)
+	ld	yh, a
+;	joysticksend.c: 578: ADC_CR1 &= ~(1<<0); // ADC Stop Conversion
+	ldw	x, #0x5401
+	ld	a, (x)
+	and	a, #0xfe
+	ld	(x), a
+;	joysticksend.c: 580: xaxis &= 0x03ff; // 0 bits resolution so above 0x0400 is nothing
+	ld	a, yh
+	and	a, #0x03
+	ld	yh, a
+	ldw	(0x35, sp), y
+;	joysticksend.c: 582: ADC_CSR |= ((0x0F)&6); // select channel = 6 = PD6
+	ldw	x, #0x5400
+	ld	a, (x)
+	or	a, #0x06
+	ld	(x), a
+;	joysticksend.c: 583: ADC_CR2 |= ADC_ALIGN; // Right Aligned Data
+	ldw	x, #0x5402
+	ld	a, (x)
+	or	a, #0x08
+	ld	(x), a
+;	joysticksend.c: 584: ADC_CR1 |= ADC_ADON; // ADC ON
+	bset	0x5401, #0
+;	joysticksend.c: 585: ADC_CR1 |= ADC_ADON; // start conversion 
+	bset	0x5401, #0
+;	joysticksend.c: 586: while(((ADC_CSR)&(1<<7))== 0); // Wait till EOC
+00106$:
+	ldw	x, #0x5400
+	ld	a, (x)
+	sll	a
+	jrnc	00106$
+;	joysticksend.c: 587: yaxis |= (unsigned int)ADC_DRL;
+	ldw	x, #0x5405
+	ld	a, (x)
+	rlwa	x
+	clr	a
+	rrwa	x
+	ldw	y, (0x3d, sp)
+	ldw	(0x33, sp), y
+	or	a, (0x34, sp)
+	ld	yl, a
+	ld	a, xh
+	or	a, (0x33, sp)
+	ld	yh, a
+;	joysticksend.c: 588: yaxis |= (unsigned int)ADC_DRH<<8;
+	ldw	x, #0x5404
+	ld	a, (x)
+	clrw	x
+	ld	xl, a
+	sllw	x
+	sllw	x
+	sllw	x
+	sllw	x
+	sllw	x
+	sllw	x
+	sllw	x
+	sllw	x
+	ldw	(0x31, sp), y
+	ld	a, xl
+	or	a, (0x32, sp)
+	ld	yl, a
+	ld	a, xh
+	or	a, (0x31, sp)
+	ld	yh, a
+;	joysticksend.c: 590: ADC_CR1 &= ~(1<<0); // ADC Stop Conversion
+	ldw	x, #0x5401
+	ld	a, (x)
+	and	a, #0xfe
+	ld	(x), a
+;	joysticksend.c: 591: yaxis &= 0x03ff; // 0 bits resolution so above 0x0400 is nothing
+	ld	a, yh
+	and	a, #0x03
+	ld	yh, a
 ;	joysticksend.c: 596: tx_payload[0] = 0xac; //first two is unique ID for this emitter 
-	ldw	x, (0x2d, sp)
+	ldw	x, (0x39, sp)
 	ld	a, #0xac
 	ld	(x), a
 ;	joysticksend.c: 597: tx_payload[1] = 0xcc;
-	ldw	x, (0x2d, sp)
+	ldw	x, (0x39, sp)
 	incw	x
 	ld	a, #0xcc
 	ld	(x), a
 ;	joysticksend.c: 598: tx_payload[2] = xaxis>>8;
-	ldw	x, (0x2d, sp)
+	ldw	x, (0x39, sp)
 	incw	x
 	incw	x
-	clr	(x)
+	ldw	(0x2f, sp), x
+	ldw	x, (0x35, sp)
+	sraw	x
+	sraw	x
+	sraw	x
+	sraw	x
+	sraw	x
+	sraw	x
+	sraw	x
+	sraw	x
+	ld	a, xl
+	ldw	x, (0x2f, sp)
+	ld	(x), a
 ;	joysticksend.c: 599: tx_payload[3] = xaxis & 0x00ff; 
-	ldw	x, (0x2d, sp)
+	ldw	x, (0x39, sp)
 	addw	x, #0x0003
-	clr	(x)
+	ld	a, (0x36, sp)
+	push	a
+	clr	(0x2e, sp)
+	pop	a
+	ld	(x), a
 ;	joysticksend.c: 600: tx_payload[4] = yaxis>>8;
-	ldw	x, (0x2d, sp)
+	ldw	x, (0x39, sp)
 	addw	x, #0x0004
-	clr	(x)
+	ldw	(0x41, sp), x
+	ldw	x, y
+	sraw	x
+	sraw	x
+	sraw	x
+	sraw	x
+	sraw	x
+	sraw	x
+	sraw	x
+	sraw	x
+	ld	a, xl
+	ldw	x, (0x41, sp)
+	ld	(x), a
 ;	joysticksend.c: 601: tx_payload[5] = yaxis & 0x00ff; 
-	ldw	x, (0x2d, sp)
+	ldw	x, (0x39, sp)
 	addw	x, #0x0005
-	clr	(x)
+	clr	a
+	ld	a, yl
+	ld	(x), a
 ;	joysticksend.c: 602: tx_payload[6] = joyswitch; 
-	ldw	x, (0x2d, sp)
+	ldw	x, (0x39, sp)
 	ld	a, (0x01, sp)
 	ld	(0x0006, x), a
 ;	joysticksend.c: 603: write_spi_buf(iRF_CMD_WR_TX_PLOAD, tx_payload, 7);
-	ldw	x, (0x2d, sp)
+	ldw	x, (0x39, sp)
 	push	#0x07
 	pushw	x
 	push	#0xa0
@@ -1644,31 +1803,8 @@ _main:
 	push	#0x27
 	call	_write_spi_reg
 	addw	sp, #2
-;	joysticksend.c: 605: readstatus = read_spi_reg(STATUS);
-	push	#0x07
-	call	_read_spi_reg
-	addw	sp, #1
-;	joysticksend.c: 606: UARTPrintF("status = \n\r");
-	ldw	x, #___str_0+0
-	push	a
-	pushw	x
-	call	_UARTPrintF
-	addw	sp, #2
-	pop	a
-;	joysticksend.c: 607: print_UCHAR_hex(readstatus);
-	push	a
-	call	_print_UCHAR_hex
-	pop	a
-;	joysticksend.c: 608: readstatus=read_spi_reg(OBSERVE_TX); 
-	push	#0x08
-	call	_read_spi_reg
-	addw	sp, #1
-;	joysticksend.c: 609: print_UCHAR_hex(readstatus);
-	push	a
-	call	_print_UCHAR_hex
-	pop	a
-;	joysticksend.c: 611: delay(4);
-	push	#0x04
+;	joysticksend.c: 611: delay(1);
+	push	#0x01
 	push	#0x00
 	call	_delay
 	addw	sp, #2
@@ -1677,15 +1813,10 @@ _main:
 	ld	a, (x)
 	and	a, #0xfb
 	ld	(x), a
-	jp	00104$
-	addw	sp, #46
+	jp	00110$
+	addw	sp, #66
 	ret
 	.area CODE
-___str_0:
-	.ascii "status = "
-	.db 0x0A
-	.db 0x0D
-	.db 0x00
 	.area INITIALIZER
 __xinit__SE8R01_DR_2M:
 	.dw #0x0000

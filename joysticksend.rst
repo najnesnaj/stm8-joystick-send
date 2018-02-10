@@ -1,7 +1,7 @@
                                       1 ;--------------------------------------------------------
                                       2 ; File Created by SDCC : free open source ANSI-C Compiler
                                       3 ; Version 3.4.0 #8981 (Jul 11 2014) (Linux)
-                                      4 ; This file was generated Thu Feb  8 11:44:52 2018
+                                      4 ; This file was generated Sat Feb 10 12:11:19 2018
                                       5 ;--------------------------------------------------------
                                       6 	.module joysticksend
                                       7 	.optsdcc -mstm8
@@ -164,7 +164,7 @@
       00808F AE 00 5E         [ 2]  164 	ldw	x, #l_INITIALIZER
       008092 27 09            [ 1]  165 	jreq	00004$
       008094                        166 00003$:
-      008094 D6 89 16         [ 1]  167 	ld	a, (s_INITIALIZER - 1, x)
+      008094 D6 89 C2         [ 1]  167 	ld	a, (s_INITIALIZER - 1, x)
       008097 D7 00 0F         [ 1]  168 	ld	(s_INITIALIZED - 1, x), a
       00809A 5A               [ 2]  169 	decw	x
       00809B 26 F7            [ 1]  170 	jrne	00003$
@@ -523,7 +523,7 @@
       008237 89               [ 2]  523 	pushw	x
       008238 4B 0C            [ 1]  524 	push	#0x0c
       00823A 4B 04            [ 1]  525 	push	#0x04
-      00823C CD 88 A2         [ 4]  526 	call	__mulint
+      00823C CD 89 4E         [ 4]  526 	call	__mulint
       00823F 5B 04            [ 2]  527 	addw	sp, #4
       008241 1F 05            [ 2]  528 	ldw	(0x05, sp), x
       008243                        529 00103$:
@@ -1483,7 +1483,7 @@
                                    1483 ;	 function main
                                    1484 ;	-----------------------------------------
       00876E                       1485 _main:
-      00876E 52 2E            [ 2] 1486 	sub	sp, #46
+      00876E 52 42            [ 2] 1486 	sub	sp, #66
                                    1487 ;	joysticksend.c: 515: UCHAR rx_addr_p1[]  = { 0xd2, 0xf0, 0xf0, 0xf0, 0xf0 };
       008770 90 96            [ 1] 1488 	ldw	y, sp
       008772 72 A9 00 28      [ 2] 1489 	addw	y, #40
@@ -1532,7 +1532,7 @@
       0087B6 F6               [ 1] 1532 	ld	a, (x)
       0087B7 AA 04            [ 1] 1533 	or	a, #0x04
       0087B9 F7               [ 1] 1534 	ld	(x), a
-                                   1535 ;	joysticksend.c: 527: PD_CR1 |= (1 << 2) ; // push-pull
+                                   1535 ;	joysticksend.c: 527: PD_CR1 |= (1 << 2) ; // pull
       0087BA AE 50 12         [ 2] 1536 	ldw	x, #0x5012
       0087BD F6               [ 1] 1537 	ld	a, (x)
       0087BE AA 04            [ 1] 1538 	or	a, #0x04
@@ -1547,250 +1547,380 @@
       0087CB F6               [ 1] 1547 	ld	a, (x)
       0087CC A4 EF            [ 1] 1548 	and	a, #0xef
       0087CE F7               [ 1] 1549 	ld	(x), a
-                                   1550 ;	joysticksend.c: 535: PD_CR1 |= (1<<4);
+                                   1550 ;	joysticksend.c: 535: PD_CR1 |= (1<<4); 
       0087CF AE 50 12         [ 2] 1551 	ldw	x, #0x5012
       0087D2 F6               [ 1] 1552 	ld	a, (x)
       0087D3 AA 10            [ 1] 1553 	or	a, #0x10
       0087D5 F7               [ 1] 1554 	ld	(x), a
-                                   1555 ;	joysticksend.c: 536: InitializeUART(); //uart port is used for analog input
-      0087D6 CD 82 DC         [ 4] 1556 	call	_InitializeUART
-                                   1557 ;	joysticksend.c: 544: InitializeSPI ();
-      0087D9 CD 81 BC         [ 4] 1558 	call	_InitializeSPI
-                                   1559 ;	joysticksend.c: 547: memset (tx_payload, 0, sizeof(tx_payload));
-      0087DC 96               [ 1] 1560 	ldw	x, sp
-      0087DD 5C               [ 2] 1561 	incw	x
-      0087DE 5C               [ 2] 1562 	incw	x
-      0087DF 1F 2D            [ 2] 1563 	ldw	(0x2d, sp), x
-      0087E1 16 2D            [ 2] 1564 	ldw	y, (0x2d, sp)
-      0087E3 4B 21            [ 1] 1565 	push	#0x21
-      0087E5 4B 00            [ 1] 1566 	push	#0x00
-      0087E7 5F               [ 1] 1567 	clrw	x
-      0087E8 89               [ 2] 1568 	pushw	x
-      0087E9 90 89            [ 2] 1569 	pushw	y
-      0087EB CD 88 F8         [ 4] 1570 	call	_memset
-      0087EE 5B 06            [ 2] 1571 	addw	sp, #6
-                                   1572 ;	joysticksend.c: 550: init_io();                        // Initialize IO port
-      0087F0 CD 83 55         [ 4] 1573 	call	_init_io
-                                   1574 ;	joysticksend.c: 551: write_spi_reg(FLUSH_TX,0); // transmit -- send data 
-      0087F3 4B 00            [ 1] 1575 	push	#0x00
-      0087F5 4B E1            [ 1] 1576 	push	#0xe1
-      0087F7 CD 80 CE         [ 4] 1577 	call	_write_spi_reg
-      0087FA 5B 02            [ 2] 1578 	addw	sp, #2
-                                   1579 ;	joysticksend.c: 552: readstatus = read_spi_reg(CONFIG);
-      0087FC 4B 00            [ 1] 1580 	push	#0x00
-      0087FE CD 81 0A         [ 4] 1581 	call	_read_spi_reg
-      008801 84               [ 1] 1582 	pop	a
-                                   1583 ;	joysticksend.c: 553: readstatus = read_spi_reg(STATUS);
-      008802 4B 07            [ 1] 1584 	push	#0x07
-      008804 CD 81 0A         [ 4] 1585 	call	_read_spi_reg
-      008807 84               [ 1] 1586 	pop	a
-                                   1587 ;	joysticksend.c: 555: SE8R01_Init();
-      008808 CD 86 C9         [ 4] 1588 	call	_SE8R01_Init
-                                   1589 ;	joysticksend.c: 559: while (1) {
-      00880B                       1590 00104$:
-                                   1591 ;	joysticksend.c: 565: joyswitch = PD_IDR & (1<<4);
-      00880B AE 50 10         [ 2] 1592 	ldw	x, #0x5010
-      00880E F6               [ 1] 1593 	ld	a, (x)
-      00880F A4 10            [ 1] 1594 	and	a, #0x10
-      008811 6B 01            [ 1] 1595 	ld	(0x01, sp), a
-                                   1596 ;	joysticksend.c: 567: if (joyswitch == 1) PD_ODR &= ~(1 << 2); //switch led on port PD2 on
-      008813 7B 01            [ 1] 1597 	ld	a, (0x01, sp)
-      008815 A1 01            [ 1] 1598 	cp	a, #0x01
-      008817 26 07            [ 1] 1599 	jrne	00102$
-      008819 AE 50 0F         [ 2] 1600 	ldw	x, #0x500f
-      00881C F6               [ 1] 1601 	ld	a, (x)
-      00881D A4 FB            [ 1] 1602 	and	a, #0xfb
-      00881F F7               [ 1] 1603 	ld	(x), a
-      008820                       1604 00102$:
-                                   1605 ;	joysticksend.c: 596: tx_payload[0] = 0xac; //first two is unique ID for this emitter 
-      008820 1E 2D            [ 2] 1606 	ldw	x, (0x2d, sp)
-      008822 A6 AC            [ 1] 1607 	ld	a, #0xac
-      008824 F7               [ 1] 1608 	ld	(x), a
-                                   1609 ;	joysticksend.c: 597: tx_payload[1] = 0xcc;
-      008825 1E 2D            [ 2] 1610 	ldw	x, (0x2d, sp)
-      008827 5C               [ 2] 1611 	incw	x
-      008828 A6 CC            [ 1] 1612 	ld	a, #0xcc
-      00882A F7               [ 1] 1613 	ld	(x), a
-                                   1614 ;	joysticksend.c: 598: tx_payload[2] = xaxis>>8;
-      00882B 1E 2D            [ 2] 1615 	ldw	x, (0x2d, sp)
-      00882D 5C               [ 2] 1616 	incw	x
-      00882E 5C               [ 2] 1617 	incw	x
-      00882F 7F               [ 1] 1618 	clr	(x)
-                                   1619 ;	joysticksend.c: 599: tx_payload[3] = xaxis & 0x00ff; 
-      008830 1E 2D            [ 2] 1620 	ldw	x, (0x2d, sp)
-      008832 1C 00 03         [ 2] 1621 	addw	x, #0x0003
-      008835 7F               [ 1] 1622 	clr	(x)
-                                   1623 ;	joysticksend.c: 600: tx_payload[4] = yaxis>>8;
-      008836 1E 2D            [ 2] 1624 	ldw	x, (0x2d, sp)
-      008838 1C 00 04         [ 2] 1625 	addw	x, #0x0004
-      00883B 7F               [ 1] 1626 	clr	(x)
-                                   1627 ;	joysticksend.c: 601: tx_payload[5] = yaxis & 0x00ff; 
-      00883C 1E 2D            [ 2] 1628 	ldw	x, (0x2d, sp)
-      00883E 1C 00 05         [ 2] 1629 	addw	x, #0x0005
-      008841 7F               [ 1] 1630 	clr	(x)
-                                   1631 ;	joysticksend.c: 602: tx_payload[6] = joyswitch; 
-      008842 1E 2D            [ 2] 1632 	ldw	x, (0x2d, sp)
-      008844 7B 01            [ 1] 1633 	ld	a, (0x01, sp)
-      008846 E7 06            [ 1] 1634 	ld	(0x0006, x), a
-                                   1635 ;	joysticksend.c: 603: write_spi_buf(iRF_CMD_WR_TX_PLOAD, tx_payload, 7);
-      008848 1E 2D            [ 2] 1636 	ldw	x, (0x2d, sp)
-      00884A 4B 07            [ 1] 1637 	push	#0x07
-      00884C 89               [ 2] 1638 	pushw	x
-      00884D 4B A0            [ 1] 1639 	push	#0xa0
-      00884F CD 81 48         [ 4] 1640 	call	_write_spi_buf
-      008852 5B 04            [ 2] 1641 	addw	sp, #4
-                                   1642 ;	joysticksend.c: 604: write_spi_reg(WRITE_REG+STATUS, 0xff);
-      008854 4B FF            [ 1] 1643 	push	#0xff
-      008856 4B 27            [ 1] 1644 	push	#0x27
-      008858 CD 80 CE         [ 4] 1645 	call	_write_spi_reg
-      00885B 5B 02            [ 2] 1646 	addw	sp, #2
-                                   1647 ;	joysticksend.c: 605: readstatus = read_spi_reg(STATUS);
-      00885D 4B 07            [ 1] 1648 	push	#0x07
-      00885F CD 81 0A         [ 4] 1649 	call	_read_spi_reg
-      008862 5B 01            [ 2] 1650 	addw	sp, #1
-                                   1651 ;	joysticksend.c: 606: UARTPrintF("status = \n\r");
-      008864 AE 88 96         [ 2] 1652 	ldw	x, #___str_0+0
-      008867 88               [ 1] 1653 	push	a
-      008868 89               [ 2] 1654 	pushw	x
-      008869 CD 82 79         [ 4] 1655 	call	_UARTPrintF
-      00886C 5B 02            [ 2] 1656 	addw	sp, #2
-      00886E 84               [ 1] 1657 	pop	a
-                                   1658 ;	joysticksend.c: 607: print_UCHAR_hex(readstatus);
-      00886F 88               [ 1] 1659 	push	a
-      008870 CD 82 90         [ 4] 1660 	call	_print_UCHAR_hex
-      008873 84               [ 1] 1661 	pop	a
-                                   1662 ;	joysticksend.c: 608: readstatus=read_spi_reg(OBSERVE_TX); 
-      008874 4B 08            [ 1] 1663 	push	#0x08
-      008876 CD 81 0A         [ 4] 1664 	call	_read_spi_reg
-      008879 5B 01            [ 2] 1665 	addw	sp, #1
-                                   1666 ;	joysticksend.c: 609: print_UCHAR_hex(readstatus);
-      00887B 88               [ 1] 1667 	push	a
-      00887C CD 82 90         [ 4] 1668 	call	_print_UCHAR_hex
-      00887F 84               [ 1] 1669 	pop	a
-                                   1670 ;	joysticksend.c: 611: delay(4);
-      008880 4B 04            [ 1] 1671 	push	#0x04
-      008882 4B 00            [ 1] 1672 	push	#0x00
-      008884 CD 82 2E         [ 4] 1673 	call	_delay
-      008887 5B 02            [ 2] 1674 	addw	sp, #2
-                                   1675 ;	joysticksend.c: 612: PD_ODR &= ~(1 << 2); //switch led on pd2 off
-      008889 AE 50 0F         [ 2] 1676 	ldw	x, #0x500f
-      00888C F6               [ 1] 1677 	ld	a, (x)
-      00888D A4 FB            [ 1] 1678 	and	a, #0xfb
-      00888F F7               [ 1] 1679 	ld	(x), a
-      008890 CC 88 0B         [ 2] 1680 	jp	00104$
-      008893 5B 2E            [ 2] 1681 	addw	sp, #46
-      008895 81               [ 4] 1682 	ret
-                                   1683 	.area CODE
-      008896                       1684 ___str_0:
-      008896 73 74 61 74 75 73 20  1685 	.ascii "status = "
-             3D 20
-      00889F 0A                    1686 	.db 0x0A
-      0088A0 0D                    1687 	.db 0x0D
-      0088A1 00                    1688 	.db 0x00
-                                   1689 	.area INITIALIZER
-      008917                       1690 __xinit__SE8R01_DR_2M:
-      008917 00 00                 1691 	.dw #0x0000
-      008919                       1692 __xinit__SE8R01_DR_1M:
-      008919 00 00                 1693 	.dw #0x0000
-      00891B                       1694 __xinit__SE8R01_DR_500K:
-      00891B 00 01                 1695 	.dw #0x0001
-      00891D                       1696 __xinit__pload_width_now:
-      00891D 00 00                 1697 	.dw #0x0000
-      00891F                       1698 __xinit__newdata:
-      00891F 00 00                 1699 	.dw #0x0000
-      008921                       1700 __xinit__signal_lv:
-      008921 00                    1701 	.db #0x00	;  0
-      008922                       1702 __xinit__pip:
-      008922 00 00                 1703 	.dw #0x0000
-      008924                       1704 __xinit__status:
-      008924 00                    1705 	.db #0x00	; 0
-      008925                       1706 __xinit__TX_ADDRESS:
-      008925 B3                    1707 	.db #0xB3	; 179
-      008926 43                    1708 	.db #0x43	; 67	'C'
-      008927 10                    1709 	.db #0x10	; 16
-      008928 10                    1710 	.db #0x10	; 16
-      008929                       1711 __xinit__ADDRESS2:
-      008929 B1                    1712 	.db #0xB1	; 177
-      00892A                       1713 __xinit__ADDRESS3:
-      00892A B2                    1714 	.db #0xB2	; 178
-      00892B                       1715 __xinit__ADDRESS4:
-      00892B B3                    1716 	.db #0xB3	; 179
-      00892C                       1717 __xinit__ADDRESS5:
-      00892C B4                    1718 	.db #0xB4	; 180
-      00892D                       1719 __xinit__ADDRESS1:
-      00892D B0                    1720 	.db #0xB0	; 176
-      00892E 43                    1721 	.db #0x43	; 67	'C'
-      00892F 10                    1722 	.db #0x10	; 16
-      008930 10                    1723 	.db #0x10	; 16
-      008931                       1724 __xinit__ADDRESS0:
-      008931 34                    1725 	.db #0x34	; 52	'4'
-      008932 43                    1726 	.db #0x43	; 67	'C'
-      008933 10                    1727 	.db #0x10	; 16
-      008934 10                    1728 	.db #0x10	; 16
-      008935                       1729 __xinit__rx_buf:
-      008935 00                    1730 	.db #0x00	; 0
-      008936 00                    1731 	.db 0x00
-      008937 00                    1732 	.db 0x00
-      008938 00                    1733 	.db 0x00
-      008939 00                    1734 	.db 0x00
-      00893A 00                    1735 	.db 0x00
-      00893B 00                    1736 	.db 0x00
-      00893C 00                    1737 	.db 0x00
-      00893D 00                    1738 	.db 0x00
-      00893E 00                    1739 	.db 0x00
-      00893F 00                    1740 	.db 0x00
-      008940 00                    1741 	.db 0x00
-      008941 00                    1742 	.db 0x00
-      008942 00                    1743 	.db 0x00
-      008943 00                    1744 	.db 0x00
-      008944 00                    1745 	.db 0x00
-      008945 00                    1746 	.db 0x00
-      008946 00                    1747 	.db 0x00
-      008947 00                    1748 	.db 0x00
-      008948 00                    1749 	.db 0x00
-      008949 00                    1750 	.db 0x00
-      00894A 00                    1751 	.db 0x00
-      00894B 00                    1752 	.db 0x00
-      00894C 00                    1753 	.db 0x00
-      00894D 00                    1754 	.db 0x00
-      00894E 00                    1755 	.db 0x00
-      00894F 00                    1756 	.db 0x00
-      008950 00                    1757 	.db 0x00
-      008951 00                    1758 	.db 0x00
-      008952 00                    1759 	.db 0x00
-      008953 00                    1760 	.db 0x00
-      008954 00                    1761 	.db 0x00
-      008955                       1762 __xinit__tx_buf:
-      008955 00                    1763 	.db #0x00	; 0
-      008956 00                    1764 	.db 0x00
-      008957 00                    1765 	.db 0x00
-      008958 00                    1766 	.db 0x00
-      008959 00                    1767 	.db 0x00
-      00895A 00                    1768 	.db 0x00
-      00895B 00                    1769 	.db 0x00
-      00895C 00                    1770 	.db 0x00
-      00895D 00                    1771 	.db 0x00
-      00895E 00                    1772 	.db 0x00
-      00895F 00                    1773 	.db 0x00
-      008960 00                    1774 	.db 0x00
-      008961 00                    1775 	.db 0x00
-      008962 00                    1776 	.db 0x00
-      008963 00                    1777 	.db 0x00
-      008964 00                    1778 	.db 0x00
-      008965 00                    1779 	.db 0x00
-      008966 00                    1780 	.db 0x00
-      008967 00                    1781 	.db 0x00
-      008968 00                    1782 	.db 0x00
-      008969 00                    1783 	.db 0x00
-      00896A 00                    1784 	.db 0x00
-      00896B 00                    1785 	.db 0x00
-      00896C 00                    1786 	.db 0x00
-      00896D 00                    1787 	.db 0x00
-      00896E 00                    1788 	.db 0x00
-      00896F 00                    1789 	.db 0x00
-      008970 00                    1790 	.db 0x00
-      008971 00                    1791 	.db 0x00
-      008972 00                    1792 	.db 0x00
-      008973 00                    1793 	.db 0x00
-      008974 00                    1794 	.db 0x00
-                                   1795 	.area CABS (ABS)
+                                   1555 ;	joysticksend.c: 544: InitializeSPI ();
+      0087D6 CD 81 BC         [ 4] 1556 	call	_InitializeSPI
+                                   1557 ;	joysticksend.c: 547: memset (tx_payload, 0, sizeof(tx_payload));
+      0087D9 96               [ 1] 1558 	ldw	x, sp
+      0087DA 5C               [ 2] 1559 	incw	x
+      0087DB 5C               [ 2] 1560 	incw	x
+      0087DC 1F 39            [ 2] 1561 	ldw	(0x39, sp), x
+      0087DE 16 39            [ 2] 1562 	ldw	y, (0x39, sp)
+      0087E0 4B 21            [ 1] 1563 	push	#0x21
+      0087E2 4B 00            [ 1] 1564 	push	#0x00
+      0087E4 5F               [ 1] 1565 	clrw	x
+      0087E5 89               [ 2] 1566 	pushw	x
+      0087E6 90 89            [ 2] 1567 	pushw	y
+      0087E8 CD 89 A4         [ 4] 1568 	call	_memset
+      0087EB 5B 06            [ 2] 1569 	addw	sp, #6
+                                   1570 ;	joysticksend.c: 550: init_io();                        // Initialize IO port
+      0087ED CD 83 55         [ 4] 1571 	call	_init_io
+                                   1572 ;	joysticksend.c: 551: write_spi_reg(FLUSH_TX,0); // transmit -- send data 
+      0087F0 4B 00            [ 1] 1573 	push	#0x00
+      0087F2 4B E1            [ 1] 1574 	push	#0xe1
+      0087F4 CD 80 CE         [ 4] 1575 	call	_write_spi_reg
+      0087F7 5B 02            [ 2] 1576 	addw	sp, #2
+                                   1577 ;	joysticksend.c: 552: readstatus = read_spi_reg(CONFIG);
+      0087F9 4B 00            [ 1] 1578 	push	#0x00
+      0087FB CD 81 0A         [ 4] 1579 	call	_read_spi_reg
+      0087FE 84               [ 1] 1580 	pop	a
+                                   1581 ;	joysticksend.c: 553: readstatus = read_spi_reg(STATUS);
+      0087FF 4B 07            [ 1] 1582 	push	#0x07
+      008801 CD 81 0A         [ 4] 1583 	call	_read_spi_reg
+      008804 84               [ 1] 1584 	pop	a
+                                   1585 ;	joysticksend.c: 555: SE8R01_Init();
+      008805 CD 86 C9         [ 4] 1586 	call	_SE8R01_Init
+                                   1587 ;	joysticksend.c: 559: while (1) {
+      008808                       1588 00110$:
+                                   1589 ;	joysticksend.c: 563: xaxis=0;
+      008808 5F               [ 1] 1590 	clrw	x
+      008809 1F 3F            [ 2] 1591 	ldw	(0x3f, sp), x
+                                   1592 ;	joysticksend.c: 564: yaxis=0;
+      00880B 5F               [ 1] 1593 	clrw	x
+      00880C 1F 3D            [ 2] 1594 	ldw	(0x3d, sp), x
+                                   1595 ;	joysticksend.c: 565: joyswitch = PD_IDR & (1<<4);
+      00880E AE 50 10         [ 2] 1596 	ldw	x, #0x5010
+      008811 F6               [ 1] 1597 	ld	a, (x)
+      008812 A4 10            [ 1] 1598 	and	a, #0x10
+      008814 6B 01            [ 1] 1599 	ld	(0x01, sp), a
+                                   1600 ;	joysticksend.c: 567: if (joyswitch == 1) PD_ODR |= (1 << 2); //switch led on port PD2 on
+      008816 7B 01            [ 1] 1601 	ld	a, (0x01, sp)
+      008818 A1 01            [ 1] 1602 	cp	a, #0x01
+      00881A 26 07            [ 1] 1603 	jrne	00102$
+      00881C AE 50 0F         [ 2] 1604 	ldw	x, #0x500f
+      00881F F6               [ 1] 1605 	ld	a, (x)
+      008820 AA 04            [ 1] 1606 	or	a, #0x04
+      008822 F7               [ 1] 1607 	ld	(x), a
+      008823                       1608 00102$:
+                                   1609 ;	joysticksend.c: 569: ADC_CSR |= ((0x0F)&5); // select channel = 5 = PD5
+      008823 AE 54 00         [ 2] 1610 	ldw	x, #0x5400
+      008826 F6               [ 1] 1611 	ld	a, (x)
+      008827 AA 05            [ 1] 1612 	or	a, #0x05
+      008829 F7               [ 1] 1613 	ld	(x), a
+                                   1614 ;	joysticksend.c: 570: ADC_CR2 |= ADC_ALIGN; // Right Aligned Data
+      00882A AE 54 02         [ 2] 1615 	ldw	x, #0x5402
+      00882D F6               [ 1] 1616 	ld	a, (x)
+      00882E AA 08            [ 1] 1617 	or	a, #0x08
+      008830 F7               [ 1] 1618 	ld	(x), a
+                                   1619 ;	joysticksend.c: 571: ADC_CR1 |= ADC_ADON; // ADC ON
+      008831 72 10 54 01      [ 1] 1620 	bset	0x5401, #0
+                                   1621 ;	joysticksend.c: 572: ADC_CR1 |= ADC_ADON; // start conversion 
+      008835 72 10 54 01      [ 1] 1622 	bset	0x5401, #0
+                                   1623 ;	joysticksend.c: 573: while(((ADC_CSR)&(1<<7))== 0); // Wait till EOC
+      008839                       1624 00103$:
+      008839 AE 54 00         [ 2] 1625 	ldw	x, #0x5400
+      00883C F6               [ 1] 1626 	ld	a, (x)
+      00883D 48               [ 1] 1627 	sll	a
+      00883E 24 F9            [ 1] 1628 	jrnc	00103$
+                                   1629 ;	joysticksend.c: 575: xaxis |= (unsigned int)ADC_DRL;
+      008840 AE 54 05         [ 2] 1630 	ldw	x, #0x5405
+      008843 F6               [ 1] 1631 	ld	a, (x)
+      008844 02               [ 1] 1632 	rlwa	x
+      008845 4F               [ 1] 1633 	clr	a
+      008846 01               [ 1] 1634 	rrwa	x
+      008847 16 3F            [ 2] 1635 	ldw	y, (0x3f, sp)
+      008849 17 3B            [ 2] 1636 	ldw	(0x3b, sp), y
+      00884B 1A 3C            [ 1] 1637 	or	a, (0x3c, sp)
+      00884D 90 97            [ 1] 1638 	ld	yl, a
+      00884F 9E               [ 1] 1639 	ld	a, xh
+      008850 1A 3B            [ 1] 1640 	or	a, (0x3b, sp)
+      008852 90 95            [ 1] 1641 	ld	yh, a
+                                   1642 ;	joysticksend.c: 576: xaxis |= (unsigned int)ADC_DRH<<8;
+      008854 AE 54 04         [ 2] 1643 	ldw	x, #0x5404
+      008857 F6               [ 1] 1644 	ld	a, (x)
+      008858 5F               [ 1] 1645 	clrw	x
+      008859 97               [ 1] 1646 	ld	xl, a
+      00885A 58               [ 2] 1647 	sllw	x
+      00885B 58               [ 2] 1648 	sllw	x
+      00885C 58               [ 2] 1649 	sllw	x
+      00885D 58               [ 2] 1650 	sllw	x
+      00885E 58               [ 2] 1651 	sllw	x
+      00885F 58               [ 2] 1652 	sllw	x
+      008860 58               [ 2] 1653 	sllw	x
+      008861 58               [ 2] 1654 	sllw	x
+      008862 17 37            [ 2] 1655 	ldw	(0x37, sp), y
+      008864 9F               [ 1] 1656 	ld	a, xl
+      008865 1A 38            [ 1] 1657 	or	a, (0x38, sp)
+      008867 90 97            [ 1] 1658 	ld	yl, a
+      008869 9E               [ 1] 1659 	ld	a, xh
+      00886A 1A 37            [ 1] 1660 	or	a, (0x37, sp)
+      00886C 90 95            [ 1] 1661 	ld	yh, a
+                                   1662 ;	joysticksend.c: 578: ADC_CR1 &= ~(1<<0); // ADC Stop Conversion
+      00886E AE 54 01         [ 2] 1663 	ldw	x, #0x5401
+      008871 F6               [ 1] 1664 	ld	a, (x)
+      008872 A4 FE            [ 1] 1665 	and	a, #0xfe
+      008874 F7               [ 1] 1666 	ld	(x), a
+                                   1667 ;	joysticksend.c: 580: xaxis &= 0x03ff; // 0 bits resolution so above 0x0400 is nothing
+      008875 90 9E            [ 1] 1668 	ld	a, yh
+      008877 A4 03            [ 1] 1669 	and	a, #0x03
+      008879 90 95            [ 1] 1670 	ld	yh, a
+      00887B 17 35            [ 2] 1671 	ldw	(0x35, sp), y
+                                   1672 ;	joysticksend.c: 582: ADC_CSR |= ((0x0F)&6); // select channel = 6 = PD6
+      00887D AE 54 00         [ 2] 1673 	ldw	x, #0x5400
+      008880 F6               [ 1] 1674 	ld	a, (x)
+      008881 AA 06            [ 1] 1675 	or	a, #0x06
+      008883 F7               [ 1] 1676 	ld	(x), a
+                                   1677 ;	joysticksend.c: 583: ADC_CR2 |= ADC_ALIGN; // Right Aligned Data
+      008884 AE 54 02         [ 2] 1678 	ldw	x, #0x5402
+      008887 F6               [ 1] 1679 	ld	a, (x)
+      008888 AA 08            [ 1] 1680 	or	a, #0x08
+      00888A F7               [ 1] 1681 	ld	(x), a
+                                   1682 ;	joysticksend.c: 584: ADC_CR1 |= ADC_ADON; // ADC ON
+      00888B 72 10 54 01      [ 1] 1683 	bset	0x5401, #0
+                                   1684 ;	joysticksend.c: 585: ADC_CR1 |= ADC_ADON; // start conversion 
+      00888F 72 10 54 01      [ 1] 1685 	bset	0x5401, #0
+                                   1686 ;	joysticksend.c: 586: while(((ADC_CSR)&(1<<7))== 0); // Wait till EOC
+      008893                       1687 00106$:
+      008893 AE 54 00         [ 2] 1688 	ldw	x, #0x5400
+      008896 F6               [ 1] 1689 	ld	a, (x)
+      008897 48               [ 1] 1690 	sll	a
+      008898 24 F9            [ 1] 1691 	jrnc	00106$
+                                   1692 ;	joysticksend.c: 587: yaxis |= (unsigned int)ADC_DRL;
+      00889A AE 54 05         [ 2] 1693 	ldw	x, #0x5405
+      00889D F6               [ 1] 1694 	ld	a, (x)
+      00889E 02               [ 1] 1695 	rlwa	x
+      00889F 4F               [ 1] 1696 	clr	a
+      0088A0 01               [ 1] 1697 	rrwa	x
+      0088A1 16 3D            [ 2] 1698 	ldw	y, (0x3d, sp)
+      0088A3 17 33            [ 2] 1699 	ldw	(0x33, sp), y
+      0088A5 1A 34            [ 1] 1700 	or	a, (0x34, sp)
+      0088A7 90 97            [ 1] 1701 	ld	yl, a
+      0088A9 9E               [ 1] 1702 	ld	a, xh
+      0088AA 1A 33            [ 1] 1703 	or	a, (0x33, sp)
+      0088AC 90 95            [ 1] 1704 	ld	yh, a
+                                   1705 ;	joysticksend.c: 588: yaxis |= (unsigned int)ADC_DRH<<8;
+      0088AE AE 54 04         [ 2] 1706 	ldw	x, #0x5404
+      0088B1 F6               [ 1] 1707 	ld	a, (x)
+      0088B2 5F               [ 1] 1708 	clrw	x
+      0088B3 97               [ 1] 1709 	ld	xl, a
+      0088B4 58               [ 2] 1710 	sllw	x
+      0088B5 58               [ 2] 1711 	sllw	x
+      0088B6 58               [ 2] 1712 	sllw	x
+      0088B7 58               [ 2] 1713 	sllw	x
+      0088B8 58               [ 2] 1714 	sllw	x
+      0088B9 58               [ 2] 1715 	sllw	x
+      0088BA 58               [ 2] 1716 	sllw	x
+      0088BB 58               [ 2] 1717 	sllw	x
+      0088BC 17 31            [ 2] 1718 	ldw	(0x31, sp), y
+      0088BE 9F               [ 1] 1719 	ld	a, xl
+      0088BF 1A 32            [ 1] 1720 	or	a, (0x32, sp)
+      0088C1 90 97            [ 1] 1721 	ld	yl, a
+      0088C3 9E               [ 1] 1722 	ld	a, xh
+      0088C4 1A 31            [ 1] 1723 	or	a, (0x31, sp)
+      0088C6 90 95            [ 1] 1724 	ld	yh, a
+                                   1725 ;	joysticksend.c: 590: ADC_CR1 &= ~(1<<0); // ADC Stop Conversion
+      0088C8 AE 54 01         [ 2] 1726 	ldw	x, #0x5401
+      0088CB F6               [ 1] 1727 	ld	a, (x)
+      0088CC A4 FE            [ 1] 1728 	and	a, #0xfe
+      0088CE F7               [ 1] 1729 	ld	(x), a
+                                   1730 ;	joysticksend.c: 591: yaxis &= 0x03ff; // 0 bits resolution so above 0x0400 is nothing
+      0088CF 90 9E            [ 1] 1731 	ld	a, yh
+      0088D1 A4 03            [ 1] 1732 	and	a, #0x03
+      0088D3 90 95            [ 1] 1733 	ld	yh, a
+                                   1734 ;	joysticksend.c: 596: tx_payload[0] = 0xac; //first two is unique ID for this emitter 
+      0088D5 1E 39            [ 2] 1735 	ldw	x, (0x39, sp)
+      0088D7 A6 AC            [ 1] 1736 	ld	a, #0xac
+      0088D9 F7               [ 1] 1737 	ld	(x), a
+                                   1738 ;	joysticksend.c: 597: tx_payload[1] = 0xcc;
+      0088DA 1E 39            [ 2] 1739 	ldw	x, (0x39, sp)
+      0088DC 5C               [ 2] 1740 	incw	x
+      0088DD A6 CC            [ 1] 1741 	ld	a, #0xcc
+      0088DF F7               [ 1] 1742 	ld	(x), a
+                                   1743 ;	joysticksend.c: 598: tx_payload[2] = xaxis>>8;
+      0088E0 1E 39            [ 2] 1744 	ldw	x, (0x39, sp)
+      0088E2 5C               [ 2] 1745 	incw	x
+      0088E3 5C               [ 2] 1746 	incw	x
+      0088E4 1F 2F            [ 2] 1747 	ldw	(0x2f, sp), x
+      0088E6 1E 35            [ 2] 1748 	ldw	x, (0x35, sp)
+      0088E8 57               [ 2] 1749 	sraw	x
+      0088E9 57               [ 2] 1750 	sraw	x
+      0088EA 57               [ 2] 1751 	sraw	x
+      0088EB 57               [ 2] 1752 	sraw	x
+      0088EC 57               [ 2] 1753 	sraw	x
+      0088ED 57               [ 2] 1754 	sraw	x
+      0088EE 57               [ 2] 1755 	sraw	x
+      0088EF 57               [ 2] 1756 	sraw	x
+      0088F0 9F               [ 1] 1757 	ld	a, xl
+      0088F1 1E 2F            [ 2] 1758 	ldw	x, (0x2f, sp)
+      0088F3 F7               [ 1] 1759 	ld	(x), a
+                                   1760 ;	joysticksend.c: 599: tx_payload[3] = xaxis & 0x00ff; 
+      0088F4 1E 39            [ 2] 1761 	ldw	x, (0x39, sp)
+      0088F6 1C 00 03         [ 2] 1762 	addw	x, #0x0003
+      0088F9 7B 36            [ 1] 1763 	ld	a, (0x36, sp)
+      0088FB 88               [ 1] 1764 	push	a
+      0088FC 0F 2E            [ 1] 1765 	clr	(0x2e, sp)
+      0088FE 84               [ 1] 1766 	pop	a
+      0088FF F7               [ 1] 1767 	ld	(x), a
+                                   1768 ;	joysticksend.c: 600: tx_payload[4] = yaxis>>8;
+      008900 1E 39            [ 2] 1769 	ldw	x, (0x39, sp)
+      008902 1C 00 04         [ 2] 1770 	addw	x, #0x0004
+      008905 1F 41            [ 2] 1771 	ldw	(0x41, sp), x
+      008907 93               [ 1] 1772 	ldw	x, y
+      008908 57               [ 2] 1773 	sraw	x
+      008909 57               [ 2] 1774 	sraw	x
+      00890A 57               [ 2] 1775 	sraw	x
+      00890B 57               [ 2] 1776 	sraw	x
+      00890C 57               [ 2] 1777 	sraw	x
+      00890D 57               [ 2] 1778 	sraw	x
+      00890E 57               [ 2] 1779 	sraw	x
+      00890F 57               [ 2] 1780 	sraw	x
+      008910 9F               [ 1] 1781 	ld	a, xl
+      008911 1E 41            [ 2] 1782 	ldw	x, (0x41, sp)
+      008913 F7               [ 1] 1783 	ld	(x), a
+                                   1784 ;	joysticksend.c: 601: tx_payload[5] = yaxis & 0x00ff; 
+      008914 1E 39            [ 2] 1785 	ldw	x, (0x39, sp)
+      008916 1C 00 05         [ 2] 1786 	addw	x, #0x0005
+      008919 4F               [ 1] 1787 	clr	a
+      00891A 90 9F            [ 1] 1788 	ld	a, yl
+      00891C F7               [ 1] 1789 	ld	(x), a
+                                   1790 ;	joysticksend.c: 602: tx_payload[6] = joyswitch; 
+      00891D 1E 39            [ 2] 1791 	ldw	x, (0x39, sp)
+      00891F 7B 01            [ 1] 1792 	ld	a, (0x01, sp)
+      008921 E7 06            [ 1] 1793 	ld	(0x0006, x), a
+                                   1794 ;	joysticksend.c: 603: write_spi_buf(iRF_CMD_WR_TX_PLOAD, tx_payload, 7);
+      008923 1E 39            [ 2] 1795 	ldw	x, (0x39, sp)
+      008925 4B 07            [ 1] 1796 	push	#0x07
+      008927 89               [ 2] 1797 	pushw	x
+      008928 4B A0            [ 1] 1798 	push	#0xa0
+      00892A CD 81 48         [ 4] 1799 	call	_write_spi_buf
+      00892D 5B 04            [ 2] 1800 	addw	sp, #4
+                                   1801 ;	joysticksend.c: 604: write_spi_reg(WRITE_REG+STATUS, 0xff);
+      00892F 4B FF            [ 1] 1802 	push	#0xff
+      008931 4B 27            [ 1] 1803 	push	#0x27
+      008933 CD 80 CE         [ 4] 1804 	call	_write_spi_reg
+      008936 5B 02            [ 2] 1805 	addw	sp, #2
+                                   1806 ;	joysticksend.c: 611: delay(1);
+      008938 4B 01            [ 1] 1807 	push	#0x01
+      00893A 4B 00            [ 1] 1808 	push	#0x00
+      00893C CD 82 2E         [ 4] 1809 	call	_delay
+      00893F 5B 02            [ 2] 1810 	addw	sp, #2
+                                   1811 ;	joysticksend.c: 612: PD_ODR &= ~(1 << 2); //switch led on pd2 off
+      008941 AE 50 0F         [ 2] 1812 	ldw	x, #0x500f
+      008944 F6               [ 1] 1813 	ld	a, (x)
+      008945 A4 FB            [ 1] 1814 	and	a, #0xfb
+      008947 F7               [ 1] 1815 	ld	(x), a
+      008948 CC 88 08         [ 2] 1816 	jp	00110$
+      00894B 5B 42            [ 2] 1817 	addw	sp, #66
+      00894D 81               [ 4] 1818 	ret
+                                   1819 	.area CODE
+                                   1820 	.area INITIALIZER
+      0089C3                       1821 __xinit__SE8R01_DR_2M:
+      0089C3 00 00                 1822 	.dw #0x0000
+      0089C5                       1823 __xinit__SE8R01_DR_1M:
+      0089C5 00 00                 1824 	.dw #0x0000
+      0089C7                       1825 __xinit__SE8R01_DR_500K:
+      0089C7 00 01                 1826 	.dw #0x0001
+      0089C9                       1827 __xinit__pload_width_now:
+      0089C9 00 00                 1828 	.dw #0x0000
+      0089CB                       1829 __xinit__newdata:
+      0089CB 00 00                 1830 	.dw #0x0000
+      0089CD                       1831 __xinit__signal_lv:
+      0089CD 00                    1832 	.db #0x00	;  0
+      0089CE                       1833 __xinit__pip:
+      0089CE 00 00                 1834 	.dw #0x0000
+      0089D0                       1835 __xinit__status:
+      0089D0 00                    1836 	.db #0x00	; 0
+      0089D1                       1837 __xinit__TX_ADDRESS:
+      0089D1 B3                    1838 	.db #0xB3	; 179
+      0089D2 43                    1839 	.db #0x43	; 67	'C'
+      0089D3 10                    1840 	.db #0x10	; 16
+      0089D4 10                    1841 	.db #0x10	; 16
+      0089D5                       1842 __xinit__ADDRESS2:
+      0089D5 B1                    1843 	.db #0xB1	; 177
+      0089D6                       1844 __xinit__ADDRESS3:
+      0089D6 B2                    1845 	.db #0xB2	; 178
+      0089D7                       1846 __xinit__ADDRESS4:
+      0089D7 B3                    1847 	.db #0xB3	; 179
+      0089D8                       1848 __xinit__ADDRESS5:
+      0089D8 B4                    1849 	.db #0xB4	; 180
+      0089D9                       1850 __xinit__ADDRESS1:
+      0089D9 B0                    1851 	.db #0xB0	; 176
+      0089DA 43                    1852 	.db #0x43	; 67	'C'
+      0089DB 10                    1853 	.db #0x10	; 16
+      0089DC 10                    1854 	.db #0x10	; 16
+      0089DD                       1855 __xinit__ADDRESS0:
+      0089DD 34                    1856 	.db #0x34	; 52	'4'
+      0089DE 43                    1857 	.db #0x43	; 67	'C'
+      0089DF 10                    1858 	.db #0x10	; 16
+      0089E0 10                    1859 	.db #0x10	; 16
+      0089E1                       1860 __xinit__rx_buf:
+      0089E1 00                    1861 	.db #0x00	; 0
+      0089E2 00                    1862 	.db 0x00
+      0089E3 00                    1863 	.db 0x00
+      0089E4 00                    1864 	.db 0x00
+      0089E5 00                    1865 	.db 0x00
+      0089E6 00                    1866 	.db 0x00
+      0089E7 00                    1867 	.db 0x00
+      0089E8 00                    1868 	.db 0x00
+      0089E9 00                    1869 	.db 0x00
+      0089EA 00                    1870 	.db 0x00
+      0089EB 00                    1871 	.db 0x00
+      0089EC 00                    1872 	.db 0x00
+      0089ED 00                    1873 	.db 0x00
+      0089EE 00                    1874 	.db 0x00
+      0089EF 00                    1875 	.db 0x00
+      0089F0 00                    1876 	.db 0x00
+      0089F1 00                    1877 	.db 0x00
+      0089F2 00                    1878 	.db 0x00
+      0089F3 00                    1879 	.db 0x00
+      0089F4 00                    1880 	.db 0x00
+      0089F5 00                    1881 	.db 0x00
+      0089F6 00                    1882 	.db 0x00
+      0089F7 00                    1883 	.db 0x00
+      0089F8 00                    1884 	.db 0x00
+      0089F9 00                    1885 	.db 0x00
+      0089FA 00                    1886 	.db 0x00
+      0089FB 00                    1887 	.db 0x00
+      0089FC 00                    1888 	.db 0x00
+      0089FD 00                    1889 	.db 0x00
+      0089FE 00                    1890 	.db 0x00
+      0089FF 00                    1891 	.db 0x00
+      008A00 00                    1892 	.db 0x00
+      008A01                       1893 __xinit__tx_buf:
+      008A01 00                    1894 	.db #0x00	; 0
+      008A02 00                    1895 	.db 0x00
+      008A03 00                    1896 	.db 0x00
+      008A04 00                    1897 	.db 0x00
+      008A05 00                    1898 	.db 0x00
+      008A06 00                    1899 	.db 0x00
+      008A07 00                    1900 	.db 0x00
+      008A08 00                    1901 	.db 0x00
+      008A09 00                    1902 	.db 0x00
+      008A0A 00                    1903 	.db 0x00
+      008A0B 00                    1904 	.db 0x00
+      008A0C 00                    1905 	.db 0x00
+      008A0D 00                    1906 	.db 0x00
+      008A0E 00                    1907 	.db 0x00
+      008A0F 00                    1908 	.db 0x00
+      008A10 00                    1909 	.db 0x00
+      008A11 00                    1910 	.db 0x00
+      008A12 00                    1911 	.db 0x00
+      008A13 00                    1912 	.db 0x00
+      008A14 00                    1913 	.db 0x00
+      008A15 00                    1914 	.db 0x00
+      008A16 00                    1915 	.db 0x00
+      008A17 00                    1916 	.db 0x00
+      008A18 00                    1917 	.db 0x00
+      008A19 00                    1918 	.db 0x00
+      008A1A 00                    1919 	.db 0x00
+      008A1B 00                    1920 	.db 0x00
+      008A1C 00                    1921 	.db 0x00
+      008A1D 00                    1922 	.db 0x00
+      008A1E 00                    1923 	.db 0x00
+      008A1F 00                    1924 	.db 0x00
+      008A20 00                    1925 	.db 0x00
+                                   1926 	.area CABS (ABS)

@@ -24,7 +24,6 @@ Symbol Table
   8 _SE8R01_Init                                                   000629 GR
   2 _TX_ADDRESS                                                    00000E GR
   8 _UARTPrintF                                                    0001D9 GR
-  8 ___str_0                                                       0007F6 R
   5 __interrupt_vect                                               000000 R
     __mulint                                                       ****** GX
   6 __sdcc_gs_init_startup                                         000000 R
@@ -58,12 +57,12 @@ Symbol Table
   1 _myData_pip5                                                   000005 GR
   2 _newdata                                                       000008 GR
   2 _pip                                                           00000B GR
+  2 _pload_width_now                                               000006 GR
 ASxxxx Assembler V02.00 + NoICE + SDCC mods  (STMicroelectronics STM8), page 2.
 Hexadecimal [24-Bits]
 
 Symbol Table
 
-  2 _pload_width_now                                               000006 GR
   8 _print_UCHAR_hex                                               0001F0 GR
   8 _read_spi_buf                                                  0000E0 GR
   8 _read_spi_reg                                                  00006A GR
@@ -82,7 +81,6 @@ Symbol Table
     s_INITIALIZED                                                  ****** GX
     s_INITIALIZER                                                  ****** GX
 
-
 ASxxxx Assembler V02.00 + NoICE + SDCC mods  (STMicroelectronics STM8), page 3.
 Hexadecimal [24-Bits]
 
@@ -96,7 +94,7 @@ Area Table
    5 HOME                                       size     83   flags    0
    6 GSINIT                                     size     1A   flags    0
    7 GSFINAL                                    size      3   flags    0
-   8 CODE                                       size    802   flags    0
+   8 CODE                                       size    8AE   flags    0
    9 INITIALIZER                                size     5E   flags    0
    A CABS                                       size      0   flags    8
 

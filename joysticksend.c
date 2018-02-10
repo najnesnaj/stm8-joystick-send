@@ -524,7 +524,7 @@ int main () {
 //
 //
 PD_DDR |= (1 << 2) ; // output mode
-   PD_CR1 |= (1 << 2) ; // push-pull
+   PD_CR1 |= (1 << 2) ; // pull
        
            PD_ODR |= (1 << 2);
 
@@ -532,8 +532,8 @@ PD_DDR |= (1 << 2) ; // output mode
 
 
 	PD_DDR &= ~(1<<4);
-	PD_CR1 |= (1<<4);
-	InitializeUART(); //uart port is used for analog input
+	PD_CR1 |= (1<<4); 
+//	InitializeUART(); //uart port is used for analog input
 	//
 	//
 	// connect J4 PD5 and PD6 (left side)
@@ -564,9 +564,9 @@ PD_DDR |= (1 << 2) ; // output mode
 		yaxis=0;
 		joyswitch = PD_IDR & (1<<4);
 
-		if (joyswitch == 1) PD_ODR &= ~(1 << 2); //switch led on port PD2 on
+		if (joyswitch == 1) PD_ODR |= (1 << 2); //switch led on port PD2 on
 
-/* ADC_CSR |= ((0x0F)&5); // select channel = 5 = PD5
+ ADC_CSR |= ((0x0F)&5); // select channel = 5 = PD5
 		ADC_CR2 |= ADC_ALIGN; // Right Aligned Data
 		ADC_CR1 |= ADC_ADON; // ADC ON
 		ADC_CR1 |= ADC_ADON; // start conversion 
@@ -576,14 +576,14 @@ PD_DDR |= (1 << 2) ; // output mode
 		xaxis |= (unsigned int)ADC_DRH<<8;
 
 		ADC_CR1 &= ~(1<<0); // ADC Stop Conversion
-		xaxis &= 0x03ff; // 0 bits resolution so above 0x0400 is nothing
 
+		xaxis &= 0x03ff; // 0 bits resolution so above 0x0400 is nothing
+		
 		ADC_CSR |= ((0x0F)&6); // select channel = 6 = PD6
 		ADC_CR2 |= ADC_ALIGN; // Right Aligned Data
 		ADC_CR1 |= ADC_ADON; // ADC ON
 		ADC_CR1 |= ADC_ADON; // start conversion 
 		while(((ADC_CSR)&(1<<7))== 0); // Wait till EOC
-
 		yaxis |= (unsigned int)ADC_DRL;
 		yaxis |= (unsigned int)ADC_DRH<<8;
 
@@ -591,7 +591,7 @@ PD_DDR |= (1 << 2) ; // output mode
 		yaxis &= 0x03ff; // 0 bits resolution so above 0x0400 is nothing
 
 
-*/
+
 
 		tx_payload[0] = 0xac; //first two is unique ID for this emitter 
 		tx_payload[1] = 0xcc;
@@ -602,13 +602,13 @@ PD_DDR |= (1 << 2) ; // output mode
 		tx_payload[6] = joyswitch; 
 		write_spi_buf(iRF_CMD_WR_TX_PLOAD, tx_payload, 7);
 		write_spi_reg(WRITE_REG+STATUS, 0xff);
-		  readstatus = read_spi_reg(STATUS);
-		  UARTPrintF("status = \n\r");
-		  print_UCHAR_hex(readstatus);
-			readstatus=read_spi_reg(OBSERVE_TX); 
-			print_UCHAR_hex(readstatus);
+//		  readstatus = read_spi_reg(STATUS);
+//		  UARTPrintF("status = \n\r");
+//		  print_UCHAR_hex(readstatus);
+//			readstatus=read_spi_reg(OBSERVE_TX); 
+//			print_UCHAR_hex(readstatus);
 		// Delay before looping back
-		delay(4);
+		delay(1);
                 PD_ODR &= ~(1 << 2); //switch led on pd2 off
 
 	}
